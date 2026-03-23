@@ -218,4 +218,5 @@ Para erros de validação (Bean Validation), o payload inclui os campos inválid
     { "campo": "email", "mensagem": "email inválido" }
   ]
 }
+
 ```
