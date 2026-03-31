@@ -35,7 +35,7 @@ class ClienteControllerTest {
         Cliente cliente = new Cliente(request.nome(), request.email(), request.status());
         UUID id = UUID.randomUUID();
         TestReflectionUtils.setField(cliente, "id", id);
-        when(clienteService.cadastrar(request.nome(), request.email(), request.status())).thenReturn(cliente);
+        when(clienteService.cadastrar(request)).thenReturn(cliente);
 
         ResponseEntity<ClienteResponse> response = clienteController.cadastrar(request);
 

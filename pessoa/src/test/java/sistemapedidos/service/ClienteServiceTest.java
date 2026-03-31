@@ -1,5 +1,6 @@
 package sistemapedidos.service;
 
+import sistemapedidos.dto.ClienteCreateRequest;
 import sistemapedidos.exception.NaoEncontradoException;
 import sistemapedidos.exception.RegraNegocioException;
 import sistemapedidos.model.Cliente;
@@ -32,29 +33,28 @@ class ClienteServiceTest {
 
     @Test
     void cadastrarDeveSalvarClienteQuandoEmailNaoExiste() {
-        String nome = "Maria";
-        String email = "maria@email.com";
-        Cliente salvo = new Cliente(nome, email, StatusCliente.ATIVO);
-        when(clienteRepository.existsByEmailIgnoreCase(email)).thenReturn(false);
+        ClienteCreateRequest request = new ClienteCreateRequest("Maria", "maria@email.com", StatusCliente.ATIVO);
+        Cliente salvo = new Cliente(request.nome(), request.email(), request.status());
+        when(clienteRepository.existsByEmailIgnoreCase(request.email())).thenReturn(false);
         when(clienteRepository.save(org.mockito.ArgumentMatchers.any(Cliente.class))).thenReturn(salvo);
 
-        Cliente resultado = clienteService.cadastrar(nome, email, StatusCliente.ATIVO);
+        Cliente resultado = clienteService.cadastrar(request);
 
         assertSame(salvo, resultado);
         ArgumentCaptor<Cliente> captor = ArgumentCaptor.forClass(Cliente.class);
         verify(clienteRepository).save(captor.capture());
-        assertEquals(nome, captor.getValue().getNome());
-        assertEquals(email, captor.getValue().getEmail());
-        assertEquals(StatusCliente.ATIVO, captor.getValue().getStatus());
+        assertEquals(request.nome(), captor.getValue().getNome());
+        assertEquals(request.email(), captor.getValue().getEmail());
+        assertEquals(request.status(), captor.getValue().getStatus());
     }
 
     @Test
     void cadastrarDeveLancarExcecaoQuandoEmailJaExiste() {
-        String email = "maria@email.com";
-        when(clienteRepository.existsByEmailIgnoreCase(email)).thenReturn(true);
+        ClienteCreateRequest request = new ClienteCreateRequest("Maria", "maria@email.com", StatusCliente.ATIVO);
+        when(clienteRepository.existsByEmailIgnoreCase(request.email())).thenReturn(true);
 
         assertThrows(RegraNegocioException.class,
-                () -> clienteService.cadastrar("Maria", email, StatusCliente.ATIVO));
+                () -> clienteService.cadastrar(request));
     }
 
     @Test

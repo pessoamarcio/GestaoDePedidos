@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/pedidos")
@@ -35,10 +36,7 @@ public class PedidoController {
 
     @PostMapping
     public ResponseEntity<PedidoResponse> criar(@RequestBody @Valid PedidoCreateRequest request) {
-        Pedido pedido = pedidoService.criarPedido(
-                request.clienteId(),
-                toQuantidades(request.itens())
-        );
+        Pedido pedido = pedidoService.criarPedido(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(PedidoResponse.from(pedido));
     }
 
@@ -49,7 +47,7 @@ public class PedidoController {
 
     @PutMapping("/{id}")
     public PedidoResponse substituirItens(@PathVariable UUID id, @RequestBody @Valid PedidoItensRequest request) {
-        return PedidoResponse.from(pedidoService.substituirItens(id, toQuantidades(request.itens())));
+        return PedidoResponse.from(pedidoService.substituirItens(id, somarQuantidadesPorProduto(request.itens())));
     }
 
     @PostMapping("/{id}/pagar")
@@ -62,17 +60,21 @@ public class PedidoController {
         return PedidoResponse.from(pedidoService.cancelar(id));
     }
 
-    private static Map<UUID, Integer> toQuantidades(List<PedidoItemRequest> itens) {
-        Map<UUID, Integer> quantidades = new HashMap<>();
+    private static Map<UUID, Integer> somarQuantidadesPorProduto(List<PedidoItemRequest> itens) {
         if (itens == null) {
-            return quantidades;
+            return new HashMap<>();
         }
-        for (PedidoItemRequest item : itens) {
-            if (item == null || item.produtoId() == null) {
-                throw new RegraNegocioException("Produto é obrigatório.");
-            }
-            quantidades.merge(item.produtoId(), item.quantidade(), Integer::sum);
-        }
-        return quantidades;
+        return itens.stream()
+                .map(item -> {
+                    if (item == null || item.produtoId() == null) {
+                        throw new RegraNegocioException("Produto é obrigatório.");
+                    }
+                    return item;
+                })
+                .collect(Collectors.toMap(
+                        PedidoItemRequest::produtoId,
+                        PedidoItemRequest::quantidade,
+                        Integer::sum
+                ));
     }
 }

@@ -28,11 +28,7 @@ public class ClienteController {
 
 	@PostMapping
 	public ResponseEntity<ClienteResponse> cadastrar(@RequestBody @Valid ClienteCreateRequest request) {
-		Cliente cliente = clienteService.cadastrar(
-				request.nome(),
-				request.email(),
-				request.status()
-		);
+		Cliente cliente = clienteService.cadastrar(request);
 		return ResponseEntity.status(HttpStatus.CREATED).body(ClienteResponse.from(cliente));
 	}
 

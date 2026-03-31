@@ -19,7 +19,7 @@ class OpenApiConfigTest {
         assertNotNull(configuration);
         assertNotNull(definition);
         Info info = definition.info();
-        assertEquals("Sistema de Gestao de Pedidos (Pessoa)", info.title());
+        assertEquals("Sistema de Gestao de Pedidos", info.title());
         assertEquals("v1", info.version());
         assertTrue(info.description().contains("API REST"));
     }

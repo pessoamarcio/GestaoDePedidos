@@ -1,11 +1,11 @@
 package sistemapedidos.interfaces;
 
+import sistemapedidos.dto.ClienteCreateRequest;
 import sistemapedidos.model.Cliente;
-import sistemapedidos.model.enums.StatusCliente;
 
 import java.util.UUID;
 
 public interface ClienteServiceInterface {
-	Cliente cadastrar(String nome, String email, StatusCliente status);
+	Cliente cadastrar(ClienteCreateRequest request);
 	Cliente buscarPorId(UUID id);
 }

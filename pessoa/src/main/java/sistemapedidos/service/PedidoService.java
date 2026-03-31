@@ -1,5 +1,9 @@
 package sistemapedidos.service;
 
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import sistemapedidos.dto.PedidoCreateRequest;
+import sistemapedidos.dto.PedidoItemRequest;
 import sistemapedidos.exception.NaoEncontradoException;
 import sistemapedidos.exception.RegraNegocioException;
 import sistemapedidos.interfaces.PedidoServiceInterface;
@@ -14,9 +18,8 @@ import sistemapedidos.repository.ClienteRepository;
 import sistemapedidos.repository.PedidoRepository;
 import sistemapedidos.repository.ProdutoRepository;
 import sistemapedidos.utils.StreamUtils;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -41,30 +44,34 @@ public class PedidoService implements PedidoServiceInterface {
         this.produtoRepository = produtoRepository;
     }
 
-	@Transactional
-	@Override
-	public Pedido criarPedido(UUID clienteId, Map<UUID, Integer> itens) {
-        Map<UUID, Integer> quantidadePorProduto = validarQuantidades(itens);
+    @Transactional
+    @Override
+    public Pedido criarPedido(PedidoCreateRequest request) {
+        Map<UUID, Integer> quantidadePorProduto = validarQuantidades(toQuantidades(request.itens()));
 
-        Cliente cliente = clienteRepository.findById(clienteId)
-                .orElseThrow(() -> new NaoEncontradoException("Cliente não encontrado: " + clienteId));
+        Cliente cliente = clienteRepository.findById(request.clienteId())
+                .orElseThrow(() -> new NaoEncontradoException("Cliente não encontrado: " + request.clienteId()));
 
         if (cliente.getStatus() != StatusCliente.ATIVO) {
-            throw new RegraNegocioException("Não é permitido criar pedido para cliente INATIVO.");
+            throw new RegraNegocioException("Nãoo é permitido criar pedido para cliente INATIVO.");
         }
 
         List<Produto> produtos = produtoRepository.findAllByIdForUpdate(quantidadePorProduto.keySet());
         validarProdutosEncontrados(quantidadePorProduto.keySet(), produtos);
 
-        for (Produto produto : produtos) {
-            int quantidade = quantidadePorProduto.get(produto.getId());
-            if (produto.getStatus() != StatusProduto.DISPONIVEL) {
-                throw new RegraNegocioException("Produto INDISPONÍVEL: " + produto.getId());
-            }
-            if (!produto.podeVender(quantidade)) {
-                throw new RegraNegocioException("Produto sem estoque: " + produto.getId());
-            }
-        }
+        produtos.stream()
+                .filter(produto -> produto.getStatus() != StatusProduto.DISPONIVEL)
+                .findFirst()
+                .ifPresent(produto -> {
+                    throw new RegraNegocioException("Produto INDISPONÍVEL: " + produto.getId());
+                });
+
+        produtos.stream()
+                .filter(produto -> !produto.podeVender(quantidadePorProduto.get(produto.getId())))
+                .findFirst()
+                .ifPresent(produto -> {
+                    throw new RegraNegocioException("Produto sem estoque: " + produto.getId());
+                });
 
         for (Produto produto : produtos) {
             produto.baixarEstoque(quantidadePorProduto.get(produto.getId()));
@@ -82,16 +89,16 @@ public class PedidoService implements PedidoServiceInterface {
         return pedidoRepository.save(pedido);
     }
 
-	@Transactional(readOnly = true)
-	@Override
-	public Pedido buscarPorId(UUID id) {
+    @Transactional(readOnly = true)
+    @Override
+    public Pedido buscarPorId(UUID id) {
         return pedidoRepository.findById(id)
                 .orElseThrow(() -> new NaoEncontradoException("Pedido não encontrado: " + id));
     }
 
-	@Transactional
-	@Override
-	public Pedido substituirItens(UUID pedidoId, Map<UUID, Integer> itens) {
+    @Transactional
+    @Override
+    public Pedido substituirItens(UUID pedidoId, Map<UUID, Integer> itens) {
         Map<UUID, Integer> novaQuantidadePorProduto = validarQuantidades(itens);
 
         Pedido pedido = buscarPorId(pedidoId);
@@ -121,16 +128,21 @@ public class PedidoService implements PedidoServiceInterface {
             produtoPorId.get(entry.getKey()).devolverEstoque(entry.getValue());
         }
 
-        for (var entry : novaQuantidadePorProduto.entrySet()) {
-            Produto produto = produtoPorId.get(entry.getKey());
-            int quantidade = entry.getValue();
-            if (produto.getStatus() != StatusProduto.DISPONIVEL) {
-                throw new RegraNegocioException("Produto INDISPONÍVEL: " + produto.getId());
-            }
-            if (!produto.podeVender(quantidade)) {
-                throw new RegraNegocioException("Produto sem estoque: " + produto.getId());
-            }
-        }
+        novaQuantidadePorProduto.keySet().stream()
+                .map(produtoPorId::get)
+                .filter(produto -> produto.getStatus() != StatusProduto.DISPONIVEL)
+                .findFirst()
+                .ifPresent(produto -> {
+                    throw new RegraNegocioException("Produto INDISPON\u00cdVEL: " + produto.getId());
+                });
+
+        novaQuantidadePorProduto.keySet().stream()
+                .map(produtoPorId::get)
+                .filter(produto -> !produto.podeVender(novaQuantidadePorProduto.get(produto.getId())))
+                .findFirst()
+                .ifPresent(produto -> {
+                    throw new RegraNegocioException("Produto sem estoque: " + produto.getId());
+                });
 
         for (var entry : novaQuantidadePorProduto.entrySet()) {
             produtoPorId.get(entry.getKey()).baixarEstoque(entry.getValue());
@@ -147,9 +159,9 @@ public class PedidoService implements PedidoServiceInterface {
         return pedidoRepository.save(pedido);
     }
 
-	@Transactional
-	@Override
-	public Pedido pagar(UUID pedidoId) {
+    @Transactional
+    @Override
+    public Pedido pagar(UUID pedidoId) {
         Pedido pedido = buscarPorId(pedidoId);
         if (pedido.getStatus() == StatusPedido.CANCELADO) {
             throw new RegraNegocioException("Pedido CANCELADO não pode ser pago.");
@@ -158,9 +170,9 @@ public class PedidoService implements PedidoServiceInterface {
         return pedidoRepository.save(pedido);
     }
 
-	@Transactional
-	@Override
-	public Pedido cancelar(UUID pedidoId) {
+    @Transactional
+    @Override
+    public Pedido cancelar(UUID pedidoId) {
         Pedido pedido = buscarPorId(pedidoId);
         if (pedido.getStatus() == StatusPedido.PAGO) {
             throw new RegraNegocioException("Pedido PAGO não pode ser alterado.");
@@ -204,6 +216,20 @@ public class PedidoService implements PedidoServiceInterface {
             }
         }
         return itens;
+    }
+
+    private static Map<UUID, Integer> toQuantidades(List<PedidoItemRequest> itens) {
+        Map<UUID, Integer> quantidades = new HashMap<>();
+        if (itens == null) {
+            return quantidades;
+        }
+        for (PedidoItemRequest item : itens) {
+            if (item == null || item.produtoId() == null) {
+                throw new RegraNegocioException("Produto é obrigatório.");
+            }
+            quantidades.merge(item.produtoId(), item.quantidade(), Integer::sum);
+        }
+        return quantidades;
     }
 
     private static void validarProdutosEncontrados(Set<UUID> idsEsperados, List<Produto> produtosEncontrados) {

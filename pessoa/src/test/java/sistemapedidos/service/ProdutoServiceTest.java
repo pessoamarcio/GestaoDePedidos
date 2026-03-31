@@ -1,5 +1,6 @@
 package sistemapedidos.service;
 
+import sistemapedidos.dto.ProdutoCreateRequest;
 import sistemapedidos.exception.NaoEncontradoException;
 import sistemapedidos.exception.RegraNegocioException;
 import sistemapedidos.model.Produto;
@@ -34,30 +35,39 @@ class ProdutoServiceTest {
 
     @Test
     void cadastrarDeveSalvarProdutoQuandoNomeNaoExiste() {
-        String nome = "Notebook";
-        BigDecimal preco = new BigDecimal("4999.90");
-        int quantidade = 10;
-        Produto salvo = new Produto(nome, preco, quantidade, StatusProduto.DISPONIVEL);
-        when(produtoRepository.existsByNomeIgnoreCase(nome)).thenReturn(false);
+        ProdutoCreateRequest request = new ProdutoCreateRequest(
+                "Notebook",
+                new BigDecimal("4999.90"),
+                10,
+                StatusProduto.DISPONIVEL
+        );
+        Produto salvo = new Produto(request.nome(), request.preco(), request.quantidadeEmEstoque(), request.status());
+        when(produtoRepository.existsByNomeIgnoreCase(request.nome())).thenReturn(false);
         when(produtoRepository.save(any(Produto.class))).thenReturn(salvo);
 
-        Produto resultado = produtoService.cadastrar(nome, preco, quantidade, StatusProduto.DISPONIVEL);
+        Produto resultado = produtoService.cadastrar(request);
 
         assertSame(salvo, resultado);
         ArgumentCaptor<Produto> captor = ArgumentCaptor.forClass(Produto.class);
         verify(produtoRepository).save(captor.capture());
-        assertEquals(nome, captor.getValue().getNome());
-        assertEquals(preco, captor.getValue().getPreco());
-        assertEquals(quantidade, captor.getValue().getQuantidadeEmEstoque());
-        assertEquals(StatusProduto.DISPONIVEL, captor.getValue().getStatus());
+        assertEquals(request.nome(), captor.getValue().getNome());
+        assertEquals(request.preco(), captor.getValue().getPreco());
+        assertEquals(request.quantidadeEmEstoque(), captor.getValue().getQuantidadeEmEstoque());
+        assertEquals(request.status(), captor.getValue().getStatus());
     }
 
     @Test
     void cadastrarDeveLancarExcecaoQuandoNomeJaExiste() {
-        when(produtoRepository.existsByNomeIgnoreCase("Notebook")).thenReturn(true);
+        ProdutoCreateRequest request = new ProdutoCreateRequest(
+                "Notebook",
+                new BigDecimal("4999.90"),
+                10,
+                StatusProduto.DISPONIVEL
+        );
+        when(produtoRepository.existsByNomeIgnoreCase(request.nome())).thenReturn(true);
 
         assertThrows(RegraNegocioException.class,
-                () -> produtoService.cadastrar("Notebook", new BigDecimal("4999.90"), 10, StatusProduto.DISPONIVEL));
+                () -> produtoService.cadastrar(request));
     }
 
     @Test

@@ -28,12 +28,7 @@ public class ProdutoController {
 
 	@PostMapping
 	public ResponseEntity<ProdutoResponse> cadastrar(@RequestBody @Valid ProdutoCreateRequest request) {
-		Produto produto = produtoService.cadastrar(
-				request.nome(),
-				request.preco(),
-				request.quantidadeEmEstoque(),
-				request.status()
-		);
+		Produto produto = produtoService.cadastrar(request);
 		return ResponseEntity.status(HttpStatus.CREATED).body(ProdutoResponse.from(produto));
 	}
 

@@ -1,11 +1,10 @@
 package sistemapedidos.interfaces;
 
+import sistemapedidos.dto.ProdutoCreateRequest;
 import sistemapedidos.model.Produto;
-import sistemapedidos.model.enums.StatusProduto;
-import java.math.BigDecimal;
 import java.util.UUID;
 
 public interface ProdutoServiceInterface {
-	Produto cadastrar(String nome, BigDecimal preco, int quantidadeEmEstoque, StatusProduto status);
+	Produto cadastrar(ProdutoCreateRequest request);
 	Produto buscarPorId(UUID id);
 }

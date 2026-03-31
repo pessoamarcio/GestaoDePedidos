@@ -46,12 +46,7 @@ class ProdutoControllerTest {
         );
         UUID id = UUID.randomUUID();
         TestReflectionUtils.setField(produto, "id", id);
-        when(produtoService.cadastrar(
-                request.nome(),
-                request.preco(),
-                request.quantidadeEmEstoque(),
-                request.status()
-        )).thenReturn(produto);
+        when(produtoService.cadastrar(request)).thenReturn(produto);
 
         ResponseEntity<ProdutoResponse> response = produtoController.cadastrar(request);
 
