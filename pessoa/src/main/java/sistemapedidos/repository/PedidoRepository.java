@@ -1,25 +1,15 @@
 package sistemapedidos.repository;
 
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.JpaRepository;
 import sistemapedidos.model.Pedido;
-import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 import java.util.UUID;
 
-@Repository
-public class PedidoRepository {
+public interface PedidoRepository extends JpaRepository<Pedido, UUID> {
 
-	private final PedidoRepositoryJpa pedidoRepositoryJpa;
-
-	public PedidoRepository(PedidoRepositoryJpa pedidoRepositoryJpa) {
-		this.pedidoRepositoryJpa = pedidoRepositoryJpa;
-	}
-
-	public Pedido save(Pedido pedido) {
-		return pedidoRepositoryJpa.save(pedido);
-	}
-
-	public Optional<Pedido> findById(UUID id) {
-		return pedidoRepositoryJpa.findById(id);
-	}
+	@Override
+	@EntityGraph(attributePaths = {"cliente", "itens", "itens.produto"})
+	Optional<Pedido> findById(UUID id);
 }

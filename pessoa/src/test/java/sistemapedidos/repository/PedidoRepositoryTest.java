@@ -1,47 +1,24 @@
 package sistemapedidos.repository;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import sistemapedidos.model.Cliente;
+import org.springframework.data.jpa.repository.JpaRepository;
 import sistemapedidos.model.Pedido;
-import sistemapedidos.model.enums.StatusCliente;
 
-import java.util.Optional;
+import java.lang.reflect.ParameterizedType;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@ExtendWith(MockitoExtension.class)
 class PedidoRepositoryTest {
 
-    @Mock
-    private PedidoRepositoryJpa pedidoRepositoryJpa;
-
-    @InjectMocks
-    private PedidoRepository pedidoRepository;
-
     @Test
-    void saveDeveDelegarParaJpa() {
-        Pedido pedido = new Pedido(new Cliente("Maria", "maria@email.com", StatusCliente.ATIVO));
-        when(pedidoRepositoryJpa.save(pedido)).thenReturn(pedido);
+    void deveSerInterfaceJpaRepositoryDePedido() {
+        assertTrue(PedidoRepository.class.isInterface());
+        assertTrue(JpaRepository.class.isAssignableFrom(PedidoRepository.class));
 
-        Pedido resultado = pedidoRepository.save(pedido);
-
-        assertSame(pedido, resultado);
-    }
-
-    @Test
-    void findByIdDeveDelegarParaJpa() {
-        UUID id = UUID.randomUUID();
-        Pedido pedido = new Pedido(new Cliente("Maria", "maria@email.com", StatusCliente.ATIVO));
-        when(pedidoRepositoryJpa.findById(id)).thenReturn(Optional.of(pedido));
-
-        Optional<Pedido> resultado = pedidoRepository.findById(id);
-
-        assertSame(pedido, resultado.orElseThrow());
+        ParameterizedType repositoryType = (ParameterizedType) PedidoRepository.class.getGenericInterfaces()[0];
+        assertEquals(Pedido.class, repositoryType.getActualTypeArguments()[0]);
+        assertEquals(UUID.class, repositoryType.getActualTypeArguments()[1]);
     }
 }
