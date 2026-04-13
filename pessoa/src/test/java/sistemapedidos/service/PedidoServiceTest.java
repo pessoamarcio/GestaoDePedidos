@@ -75,6 +75,23 @@ class PedidoServiceTest {
     }
 
     @Test
+    void criarPedidoDeveMarcarProdutoComoIndisponivelQuandoEstoqueZerar() {
+        UUID clienteId = UUID.randomUUID();
+        UUID produtoId = UUID.randomUUID();
+        Cliente cliente = cliente(clienteId, StatusCliente.ATIVO);
+        Produto produto = produto(produtoId, 5, StatusProduto.DISPONIVEL);
+        PedidoCreateRequest request = new PedidoCreateRequest(clienteId, List.of(new PedidoItemRequest(produtoId, 5)));
+        when(clienteRepository.findById(clienteId)).thenReturn(Optional.of(cliente));
+        when(produtoRepository.findAllByIdForUpdate(Set.of(produtoId))).thenReturn(List.of(produto));
+        when(pedidoRepository.save(any(Pedido.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        pedidoService.criarPedido(request);
+
+        assertEquals(0, produto.getQuantidadeEmEstoque());
+        assertEquals(StatusProduto.INDISPONIVEL, produto.getStatus());
+    }
+
+    @Test
     void criarPedidoDeveFalharQuandoClienteInativo() {
         UUID clienteId = UUID.randomUUID();
         UUID produtoId = UUID.randomUUID();
@@ -154,7 +171,7 @@ class PedidoServiceTest {
     void cancelarDeveDevolverEstoqueEAtualizarStatus() {
         UUID pedidoId = UUID.randomUUID();
         UUID produtoId = UUID.randomUUID();
-        Produto produto = produto(produtoId, 8, StatusProduto.DISPONIVEL);
+        Produto produto = produto(produtoId, 0, StatusProduto.INDISPONIVEL);
         Pedido pedido = pedido(pedidoId, cliente(UUID.randomUUID(), StatusCliente.ATIVO), produto, 2);
         when(pedidoRepository.findById(pedidoId)).thenReturn(Optional.of(pedido));
         when(produtoRepository.findAllByIdForUpdate(Set.of(produtoId))).thenReturn(List.of(produto));
@@ -164,7 +181,8 @@ class PedidoServiceTest {
 
         assertSame(pedido, resultado);
         assertEquals(StatusPedido.CANCELADO, resultado.getStatus());
-        assertEquals(10, produto.getQuantidadeEmEstoque());
+        assertEquals(2, produto.getQuantidadeEmEstoque());
+        assertEquals(StatusProduto.DISPONIVEL, produto.getStatus());
     }
 
     @Test

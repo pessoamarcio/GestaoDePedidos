@@ -19,6 +19,13 @@ class ProdutoTest {
     }
 
     @Test
+    void construtorDeveMarcarComoIndisponivelQuandoEstoqueForZero() {
+        Produto produto = new Produto("Notebook", new BigDecimal("4999.90"), 0, StatusProduto.DISPONIVEL);
+
+        assertEquals(StatusProduto.INDISPONIVEL, produto.getStatus());
+    }
+
+    @Test
     void podeVenderDeveRetornarTrueQuandoDisponivelComEstoqueSuficiente() {
         Produto produto = new Produto("Notebook", new BigDecimal("4999.90"), 10, StatusProduto.DISPONIVEL);
 
@@ -42,5 +49,26 @@ class ProdutoTest {
         produto.devolverEstoque(2);
 
         assertEquals(9, produto.getQuantidadeEmEstoque());
+        assertEquals(StatusProduto.DISPONIVEL, produto.getStatus());
+    }
+
+    @Test
+    void baixarEstoqueDeveMarcarProdutoComoIndisponivelQuandoZerar() {
+        Produto produto = new Produto("Notebook", new BigDecimal("4999.90"), 2, StatusProduto.DISPONIVEL);
+
+        produto.baixarEstoque(2);
+
+        assertEquals(0, produto.getQuantidadeEmEstoque());
+        assertEquals(StatusProduto.INDISPONIVEL, produto.getStatus());
+    }
+
+    @Test
+    void devolverEstoqueDeveMarcarProdutoComoDisponivelQuandoVoltarATerQuantidade() {
+        Produto produto = new Produto("Notebook", new BigDecimal("4999.90"), 0, StatusProduto.DISPONIVEL);
+
+        produto.devolverEstoque(2);
+
+        assertEquals(2, produto.getQuantidadeEmEstoque());
+        assertEquals(StatusProduto.DISPONIVEL, produto.getStatus());
     }
 }

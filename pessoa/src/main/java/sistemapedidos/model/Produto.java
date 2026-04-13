@@ -42,6 +42,9 @@ public class Produto {
 		this.preco = preco;
 		this.quantidadeEmEstoque = quantidadeEmEstoque;
 		this.status = status == null ? StatusProduto.DISPONIVEL : status;
+		if (quantidadeEmEstoque == 0) {
+			this.status = StatusProduto.INDISPONIVEL;
+		}
 	}
 
 	public UUID getId() {
@@ -70,9 +73,21 @@ public class Produto {
 
 	public void baixarEstoque(int quantidade) {
 		this.quantidadeEmEstoque -= quantidade;
+		atualizarStatusPorEstoque();
 	}
 
 	public void devolverEstoque(int quantidade) {
 		this.quantidadeEmEstoque += quantidade;
+		atualizarStatusPorEstoque();
+	}
+
+	private void atualizarStatusPorEstoque() {
+		if (quantidadeEmEstoque == 0) {
+			this.status = StatusProduto.INDISPONIVEL;
+			return;
+		}
+		if (quantidadeEmEstoque > 0 && status == StatusProduto.INDISPONIVEL) {
+			this.status = StatusProduto.DISPONIVEL;
+		}
 	}
 }
