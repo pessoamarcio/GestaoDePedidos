@@ -70,7 +70,7 @@ class PedidoTest {
     }
 
     private static Pedido novoPedido() {
-        return new Pedido(new Cliente("Maria", "maria@email.com", StatusCliente.ATIVO));
+        return new Pedido(new Cliente("Maria", "maria@email.com", "12345678901", StatusCliente.ATIVO));
     }
 
     private static ItemPedido novoItem(String nome, String valor, int quantidade) {

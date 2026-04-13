@@ -33,9 +33,10 @@ class ClienteServiceTest {
 
     @Test
     void cadastrarDeveSalvarClienteQuandoEmailNaoExiste() {
-        ClienteCreateRequest request = new ClienteCreateRequest("Maria", "maria@email.com", StatusCliente.ATIVO);
-        Cliente salvo = new Cliente(request.nome(), request.email(), request.status());
+        ClienteCreateRequest request = new ClienteCreateRequest("Maria", "12345678901", "maria@email.com", StatusCliente.ATIVO);
+        Cliente salvo = new Cliente(request.nome(), request.email(), request.cpf(), request.status());
         when(clienteRepository.existsByEmailIgnoreCase(request.email())).thenReturn(false);
+        when(clienteRepository.existsByCpf(request.cpf())).thenReturn(false);
         when(clienteRepository.save(org.mockito.ArgumentMatchers.any(Cliente.class))).thenReturn(salvo);
 
         Cliente resultado = clienteService.cadastrar(request);
@@ -45,13 +46,24 @@ class ClienteServiceTest {
         verify(clienteRepository).save(captor.capture());
         assertEquals(request.nome(), captor.getValue().getNome());
         assertEquals(request.email(), captor.getValue().getEmail());
+        assertEquals(request.cpf(), captor.getValue().getCpf());
         assertEquals(request.status(), captor.getValue().getStatus());
     }
 
     @Test
     void cadastrarDeveLancarExcecaoQuandoEmailJaExiste() {
-        ClienteCreateRequest request = new ClienteCreateRequest("Maria", "maria@email.com", StatusCliente.ATIVO);
+        ClienteCreateRequest request = new ClienteCreateRequest("Maria", "12345678901", "maria@email.com", StatusCliente.ATIVO);
         when(clienteRepository.existsByEmailIgnoreCase(request.email())).thenReturn(true);
+
+        assertThrows(RegraNegocioException.class,
+                () -> clienteService.cadastrar(request));
+    }
+
+    @Test
+    void cadastrarDeveLancarExcecaoQuandoCpfJaExiste() {
+        ClienteCreateRequest request = new ClienteCreateRequest("Maria", "12345678901", "maria@email.com", StatusCliente.ATIVO);
+        when(clienteRepository.existsByEmailIgnoreCase(request.email())).thenReturn(false);
+        when(clienteRepository.existsByCpf(request.cpf())).thenReturn(true);
 
         assertThrows(RegraNegocioException.class,
                 () -> clienteService.cadastrar(request));
@@ -60,7 +72,7 @@ class ClienteServiceTest {
     @Test
     void buscarPorIdDeveRetornarClienteQuandoEncontrado() {
         UUID id = UUID.randomUUID();
-        Cliente cliente = new Cliente("Maria", "maria@email.com", StatusCliente.ATIVO);
+        Cliente cliente = new Cliente("Maria", "maria@email.com", "12345678901", StatusCliente.ATIVO);
         when(clienteRepository.findById(id)).thenReturn(Optional.of(cliente));
 
         Cliente resultado = clienteService.buscarPorId(id);

@@ -15,7 +15,7 @@ class ProdutoCreateRequestTest {
 
     @Test
     void deveValidarCamposObrigatorios() {
-        ProdutoCreateRequest request = new ProdutoCreateRequest("", null, -1, null);
+        ProdutoCreateRequest request = new ProdutoCreateRequest("", null, -1);
 
         Set<ConstraintViolation<ProdutoCreateRequest>> violations = validator.validate(request);
 

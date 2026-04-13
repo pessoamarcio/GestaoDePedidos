@@ -9,17 +9,18 @@ class ClienteTest {
 
     @Test
     void construtorDeveAplicarStatusPadraoQuandoNulo() {
-        Cliente cliente = new Cliente("Maria", "maria@email.com", null);
+        Cliente cliente = new Cliente("Maria", "maria@email.com", "12345678901", null);
 
         assertEquals(StatusCliente.ATIVO, cliente.getStatus());
     }
 
     @Test
     void construtorSemStatusDeveCriarClienteAtivo() {
-        Cliente cliente = new Cliente("Maria", "maria@email.com");
+        Cliente cliente = new Cliente("Maria", "maria@email.com", "12345678901");
 
         assertEquals("Maria", cliente.getNome());
         assertEquals("maria@email.com", cliente.getEmail());
+        assertEquals("12345678901", cliente.getCpf());
         assertEquals(StatusCliente.ATIVO, cliente.getStatus());
     }
 }

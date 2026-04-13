@@ -20,6 +20,9 @@ public class Cliente {
 	@GeneratedValue(strategy = GenerationType.UUID)
 	private UUID id;
 
+	@Column(nullable = false, unique = true)
+	private String cpf;
+
 	@Column(nullable = false)
 	private String nome;
 
@@ -33,18 +36,23 @@ public class Cliente {
 	protected Cliente() {
 	}
 
-	public Cliente(String nome, String email) {
-		this(nome, email, StatusCliente.ATIVO);
+	public Cliente(String nome, String email, String cpf) {
+		this(nome, email, cpf, StatusCliente.ATIVO);
 	}
 
-	public Cliente(String nome, String email, StatusCliente status) {
+	public Cliente(String nome, String email, String cpf, StatusCliente status) {
 		this.nome = nome;
 		this.email = email;
+		this.cpf = cpf;
 		this.status = status == null ? StatusCliente.ATIVO : status;
 	}
 
 	public UUID getId() {
 		return id;
+	}
+
+	public String getCpf() {
+		return cpf;
 	}
 
 	public String getNome() {

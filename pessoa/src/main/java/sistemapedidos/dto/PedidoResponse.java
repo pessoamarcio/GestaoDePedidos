@@ -1,5 +1,6 @@
 package sistemapedidos.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import sistemapedidos.model.ItemPedido;
 import sistemapedidos.model.Pedido;
 import sistemapedidos.model.enums.StatusPedido;
@@ -13,6 +14,7 @@ public record PedidoResponse(
         UUID id,
         UUID clienteId,
         StatusPedido status,
+        @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss", timezone = "America/Sao_Paulo")
         OffsetDateTime criadoEm,
         BigDecimal valorTotal,
         List<ItemResponse> itens

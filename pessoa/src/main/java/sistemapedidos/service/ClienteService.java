@@ -26,7 +26,13 @@ public class ClienteService implements ClienteServiceInterface {
 		if (clienteRepository.existsByEmailIgnoreCase(request.email())) {
 			throw new RegraNegocioException("E-mail já cadastrado.");
 		}
-		return clienteRepository.save(new Cliente(request.nome(), request.email(), request.status()));
+		if (clienteRepository.existsByCpf(request.cpf())){
+			throw new RegraNegocioException("CPF já cadastrado.");
+		}
+
+		return clienteRepository.save(
+				new Cliente(request.nome(), request.email(), request.cpf(), request.status())
+		);
 	}
 
 	@Transactional(readOnly = true)

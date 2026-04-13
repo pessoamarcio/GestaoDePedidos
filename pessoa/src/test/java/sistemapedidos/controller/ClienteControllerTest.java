@@ -31,8 +31,8 @@ class ClienteControllerTest {
 
     @Test
     void cadastrarDeveRetornarCreatedComClienteResponse() {
-        ClienteCreateRequest request = new ClienteCreateRequest("Maria", "maria@email.com", StatusCliente.ATIVO);
-        Cliente cliente = new Cliente(request.nome(), request.email(), request.status());
+        ClienteCreateRequest request = new ClienteCreateRequest("Maria", "12345678901", "maria@email.com", StatusCliente.ATIVO);
+        Cliente cliente = new Cliente(request.nome(), request.email(), request.cpf(), request.status());
         UUID id = UUID.randomUUID();
         TestReflectionUtils.setField(cliente, "id", id);
         when(clienteService.cadastrar(request)).thenReturn(cliente);
@@ -42,12 +42,13 @@ class ClienteControllerTest {
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertInstanceOf(ClienteResponse.class, response.getBody());
         assertEquals(id, response.getBody().id());
+        assertEquals("12345678901", response.getBody().cpf());
     }
 
     @Test
     void buscarPorIdDeveRetornarClienteResponse() {
         UUID id = UUID.randomUUID();
-        Cliente cliente = new Cliente("Maria", "maria@email.com", StatusCliente.ATIVO);
+        Cliente cliente = new Cliente("Maria", "maria@email.com", "12345678901", StatusCliente.ATIVO);
         TestReflectionUtils.setField(cliente, "id", id);
         when(clienteService.buscarPorId(id)).thenReturn(cliente);
 
@@ -55,5 +56,6 @@ class ClienteControllerTest {
 
         assertEquals(id, response.id());
         assertEquals("Maria", response.nome());
+        assertEquals("12345678901", response.cpf());
     }
 }

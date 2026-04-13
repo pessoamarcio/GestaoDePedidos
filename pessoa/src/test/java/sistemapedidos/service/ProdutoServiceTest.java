@@ -38,10 +38,9 @@ class ProdutoServiceTest {
         ProdutoCreateRequest request = new ProdutoCreateRequest(
                 "Notebook",
                 new BigDecimal("4999.90"),
-                10,
-                StatusProduto.DISPONIVEL
+                10
         );
-        Produto salvo = new Produto(request.nome(), request.preco(), request.quantidadeEmEstoque(), request.status());
+        Produto salvo = new Produto(request.nome(), request.preco(), request.quantidadeEmEstoque(), null);
         when(produtoRepository.existsByNomeIgnoreCase(request.nome())).thenReturn(false);
         when(produtoRepository.save(any(Produto.class))).thenReturn(salvo);
 
@@ -53,7 +52,7 @@ class ProdutoServiceTest {
         assertEquals(request.nome(), captor.getValue().getNome());
         assertEquals(request.preco(), captor.getValue().getPreco());
         assertEquals(request.quantidadeEmEstoque(), captor.getValue().getQuantidadeEmEstoque());
-        assertEquals(request.status(), captor.getValue().getStatus());
+        assertEquals(StatusProduto.DISPONIVEL, captor.getValue().getStatus());
     }
 
     @Test
@@ -61,8 +60,7 @@ class ProdutoServiceTest {
         ProdutoCreateRequest request = new ProdutoCreateRequest(
                 "Notebook",
                 new BigDecimal("4999.90"),
-                10,
-                StatusProduto.DISPONIVEL
+                10
         );
         when(produtoRepository.existsByNomeIgnoreCase(request.nome())).thenReturn(true);
 

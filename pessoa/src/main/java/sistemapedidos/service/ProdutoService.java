@@ -30,7 +30,7 @@ public class ProdutoService implements ProdutoServiceInterface {
 				request.nome(),
 				request.preco(),
 				request.quantidadeEmEstoque(),
-				request.status()
+				null
 		));
 	}
 

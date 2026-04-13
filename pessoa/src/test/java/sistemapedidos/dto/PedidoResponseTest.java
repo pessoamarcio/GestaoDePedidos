@@ -22,7 +22,7 @@ class PedidoResponseTest {
         UUID clienteId = UUID.randomUUID();
         UUID produtoId = UUID.randomUUID();
 
-        Cliente cliente = new Cliente("Maria", "maria@email.com", StatusCliente.ATIVO);
+        Cliente cliente = new Cliente("Maria", "maria@email.com", "12345678901", StatusCliente.ATIVO);
         TestReflectionUtils.setField(cliente, "id", clienteId);
 
         Produto produto = new Produto("Notebook", new BigDecimal("4999.90"), 10, StatusProduto.DISPONIVEL);

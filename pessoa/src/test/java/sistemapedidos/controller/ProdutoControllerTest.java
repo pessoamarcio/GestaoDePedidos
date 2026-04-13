@@ -35,14 +35,13 @@ class ProdutoControllerTest {
         ProdutoCreateRequest request = new ProdutoCreateRequest(
                 "Notebook",
                 new BigDecimal("4999.90"),
-                10,
-                StatusProduto.DISPONIVEL
+                10
         );
         Produto produto = new Produto(
                 request.nome(),
                 request.preco(),
                 request.quantidadeEmEstoque(),
-                request.status()
+                null
         );
         UUID id = UUID.randomUUID();
         TestReflectionUtils.setField(produto, "id", id);

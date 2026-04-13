@@ -239,7 +239,7 @@ class PedidoServiceTest {
     }
 
     private static Cliente cliente(UUID id, StatusCliente status) {
-        Cliente cliente = new Cliente("Maria", "maria@email.com", status);
+        Cliente cliente = new Cliente("Maria", "maria@email.com", "12345678901", status);
         TestReflectionUtils.setField(cliente, "id", id);
         return cliente;
     }
