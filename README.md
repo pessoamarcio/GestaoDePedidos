@@ -128,7 +128,8 @@ Response 201:
 {
   "id": "uuid",
   "clienteId": "uuid",
-  "status": "CRIADO",
+  "clienteNome": "Maria Silva",
+  "status": "AGUARDANDO_PAGAMENTO",
   "criadoEm": "2026-03-17T00:00:00-03:00",
   "valorTotal": 7999.80,
   "itens": [
@@ -147,22 +148,14 @@ Response 201:
 Busca pedido por ID.
 
 `PUT /api/pedidos/{id}`  
-Substitui todos os itens do pedido.
+Atualiza o status do pedido.
 
 Request:
 ```json
 {
-  "itens": [
-    { "produtoId": "uuid", "quantidade": 1 }
-  ]
+  "status": "PAGO"
 }
 ```
-
-`POST /api/pedidos/{id}/pagar`  
-Marca o pedido como PAGO.
-
-`POST /api/pedidos/{id}/cancelar`  
-Marca o pedido como CANCELADO.
 
 ## Regras de negócio (resumo)
 
@@ -170,7 +163,7 @@ Marca o pedido como CANCELADO.
 - Produto: nome deve ser único.
 - Pedido: deve ter ao menos 1 produto.
 - Estoque: não permite vender acima da quantidade disponível.
-- Status: pedido PAGO não pode ser alterado; pedido CANCELADO não pode ser pago ou alterado.
+- Status: pedido nasce como `AGUARDANDO_PAGAMENTO` e só pode ir para `PAGO` ou `CANCELADO`; pedidos `PAGO` e `CANCELADO` não podem ser alterados.
 - Cliente INATIVO não pode criar pedido.
 
 ## Banco de dados

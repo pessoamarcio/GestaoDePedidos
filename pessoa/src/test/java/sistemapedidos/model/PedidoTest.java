@@ -6,7 +6,6 @@ import sistemapedidos.model.enums.StatusProduto;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -23,28 +22,6 @@ class PedidoTest {
 
         assertEquals(2, pedido.getItens().size());
         assertEquals(new BigDecimal("10099.80"), pedido.getValorTotal());
-    }
-
-    @Test
-    void substituirItensDeveTrocarColecaoQuandoPedidoEstaCriado() {
-        Pedido pedido = novoPedido();
-        pedido.adicionarItem(novoItem("Notebook", "4999.90", 1));
-
-        pedido.substituirItens(List.of(novoItem("Mouse", "100.00", 3)));
-
-        assertEquals(1, pedido.getItens().size());
-        assertEquals(new BigDecimal("300.00"), pedido.getValorTotal());
-    }
-
-    @Test
-    void substituirItensDeveFalharQuandoPedidoPagoOuCancelado() {
-        Pedido pago = novoPedido();
-        pago.pagar();
-        Pedido cancelado = novoPedido();
-        cancelado.cancelar();
-
-        assertThrows(IllegalStateException.class, () -> pago.substituirItens(List.of(novoItem("Mouse", "100.00", 1))));
-        assertThrows(IllegalStateException.class, () -> cancelado.substituirItens(List.of(novoItem("Mouse", "100.00", 1))));
     }
 
     @Test
@@ -67,6 +44,13 @@ class PedidoTest {
         assertTrue(pedido.estaCancelado());
         assertFalse(pedido.estaPago());
         assertThrows(IllegalStateException.class, pedido::pagar);
+    }
+
+    @Test
+    void novoPedidoDeveIniciarAguardandoPagamento() {
+        Pedido pedido = novoPedido();
+
+        assertEquals(StatusPedido.AGUARDANDO_PAGAMENTO, pedido.getStatus());
     }
 
     private static Pedido novoPedido() {

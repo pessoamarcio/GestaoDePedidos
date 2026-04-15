@@ -1,6 +1,8 @@
 package sistemapedidos.controller;
 
 import sistemapedidos.dto.ProdutoCreateRequest;
+import sistemapedidos.dto.ProdutoEstoqueRequest;
+import sistemapedidos.dto.ProdutoEstoqueResponse;
 import sistemapedidos.dto.ProdutoResponse;
 import sistemapedidos.interfaces.ProdutoServiceInterface;
 import sistemapedidos.model.Produto;
@@ -8,6 +10,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -35,5 +38,10 @@ public class ProdutoController {
 	@GetMapping("/{id}")
 	public ProdutoResponse buscarPorId(@PathVariable UUID id) {
 		return ProdutoResponse.from(produtoService.buscarPorId(id));
+	}
+
+	@PatchMapping("/{id}/estoque")
+	public ProdutoEstoqueResponse adicionarEstoque(@PathVariable UUID id, @RequestBody @Valid ProdutoEstoqueRequest request) {
+		return ProdutoEstoqueResponse.from(produtoService.adicionarEstoque(id, request.quantidade()));
 	}
 }

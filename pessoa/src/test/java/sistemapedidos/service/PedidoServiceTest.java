@@ -24,7 +24,6 @@ import sistemapedidos.repository.ProdutoRepository;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -71,6 +70,7 @@ class PedidoServiceTest {
         assertEquals(1, resultado.getItens().size());
         assertEquals(5, resultado.getItens().getFirst().getQuantidade());
         assertEquals(5, produto.getQuantidadeEmEstoque());
+        assertEquals(StatusPedido.AGUARDANDO_PAGAMENTO, resultado.getStatus());
         verify(pedidoRepository).save(any(Pedido.class));
     }
 
@@ -121,46 +121,13 @@ class PedidoServiceTest {
     }
 
     @Test
-    void substituirItensDeveDevolverEstoqueAntigoEBaixarNovo() {
-        UUID pedidoId = UUID.randomUUID();
-        UUID clienteId = UUID.randomUUID();
-        UUID produtoAId = UUID.randomUUID();
-        UUID produtoBId = UUID.randomUUID();
-        Cliente cliente = cliente(clienteId, StatusCliente.ATIVO);
-        Produto produtoA = produto(produtoAId, 7, StatusProduto.DISPONIVEL);
-        Produto produtoB = produto(produtoBId, 20, StatusProduto.DISPONIVEL);
-        Pedido pedido = pedido(pedidoId, cliente, produtoA, 3);
-
-        when(pedidoRepository.findById(pedidoId)).thenReturn(Optional.of(pedido));
-        when(produtoRepository.findAllByIdForUpdate(Set.of(produtoAId, produtoBId))).thenReturn(List.of(produtoA, produtoB));
-        when(pedidoRepository.save(any(Pedido.class))).thenAnswer(invocation -> invocation.getArgument(0));
-
-        Pedido resultado = pedidoService.substituirItens(pedidoId, Map.of(produtoAId, 1, produtoBId, 2));
-
-        assertSame(pedido, resultado);
-        assertEquals(9, produtoA.getQuantidadeEmEstoque());
-        assertEquals(18, produtoB.getQuantidadeEmEstoque());
-        assertEquals(2, resultado.getItens().size());
-    }
-
-    @Test
-    void substituirItensDeveFalharQuandoPedidoPago() {
-        UUID pedidoId = UUID.randomUUID();
-        Pedido pedido = pedido(pedidoId, cliente(UUID.randomUUID(), StatusCliente.ATIVO), produto(UUID.randomUUID(), 10, StatusProduto.DISPONIVEL), 2);
-        TestReflectionUtils.setField(pedido, "status", StatusPedido.PAGO);
-        when(pedidoRepository.findById(pedidoId)).thenReturn(Optional.of(pedido));
-
-        assertThrows(RegraNegocioException.class, () -> pedidoService.substituirItens(pedidoId, Map.of(UUID.randomUUID(), 1)));
-    }
-
-    @Test
-    void pagarDeveAlterarStatusESalvar() {
+    void atualizarStatusDeveAlterarParaPagoESalvar() {
         UUID pedidoId = UUID.randomUUID();
         Pedido pedido = pedido(pedidoId, cliente(UUID.randomUUID(), StatusCliente.ATIVO), produto(UUID.randomUUID(), 10, StatusProduto.DISPONIVEL), 2);
         when(pedidoRepository.findById(pedidoId)).thenReturn(Optional.of(pedido));
         when(pedidoRepository.save(pedido)).thenReturn(pedido);
 
-        Pedido resultado = pedidoService.pagar(pedidoId);
+        Pedido resultado = pedidoService.atualizarStatus(pedidoId, StatusPedido.PAGO);
 
         assertSame(pedido, resultado);
         assertEquals(StatusPedido.PAGO, resultado.getStatus());
@@ -168,7 +135,7 @@ class PedidoServiceTest {
     }
 
     @Test
-    void cancelarDeveDevolverEstoqueEAtualizarStatus() {
+    void atualizarStatusDeveCancelarPedidoDevolverEstoqueEAtualizarStatus() {
         UUID pedidoId = UUID.randomUUID();
         UUID produtoId = UUID.randomUUID();
         Produto produto = produto(produtoId, 0, StatusProduto.INDISPONIVEL);
@@ -177,7 +144,7 @@ class PedidoServiceTest {
         when(produtoRepository.findAllByIdForUpdate(Set.of(produtoId))).thenReturn(List.of(produto));
         when(pedidoRepository.save(pedido)).thenReturn(pedido);
 
-        Pedido resultado = pedidoService.cancelar(pedidoId);
+        Pedido resultado = pedidoService.atualizarStatus(pedidoId, StatusPedido.CANCELADO);
 
         assertSame(pedido, resultado);
         assertEquals(StatusPedido.CANCELADO, resultado.getStatus());
@@ -186,13 +153,44 @@ class PedidoServiceTest {
     }
 
     @Test
-    void cancelarDeveRetornarMesmoPedidoQuandoJaCancelado() {
+    void atualizarStatusDeveRetornarMesmoPedidoQuandoStatusForIgual() {
+        UUID pedidoId = UUID.randomUUID();
+        Pedido pedido = pedido(pedidoId, cliente(UUID.randomUUID(), StatusCliente.ATIVO), produto(UUID.randomUUID(), 10, StatusProduto.DISPONIVEL), 2);
+        TestReflectionUtils.setField(pedido, "status", StatusPedido.PAGO);
+        when(pedidoRepository.findById(pedidoId)).thenReturn(Optional.of(pedido));
+
+        Pedido resultado = pedidoService.atualizarStatus(pedidoId, StatusPedido.PAGO);
+
+        assertSame(pedido, resultado);
+    }
+
+    @Test
+    void atualizarStatusDeveFalharQuandoPedidoJaEstiverPagoEStatusForOutro() {
+        UUID pedidoId = UUID.randomUUID();
+        Pedido pedido = pedido(pedidoId, cliente(UUID.randomUUID(), StatusCliente.ATIVO), produto(UUID.randomUUID(), 10, StatusProduto.DISPONIVEL), 2);
+        TestReflectionUtils.setField(pedido, "status", StatusPedido.PAGO);
+        when(pedidoRepository.findById(pedidoId)).thenReturn(Optional.of(pedido));
+
+        assertThrows(RegraNegocioException.class, () -> pedidoService.atualizarStatus(pedidoId, StatusPedido.CANCELADO));
+    }
+
+    @Test
+    void atualizarStatusDeveFalharQuandoPedidoJaEstiverCanceladoEStatusForOutro() {
         UUID pedidoId = UUID.randomUUID();
         Pedido pedido = pedido(pedidoId, cliente(UUID.randomUUID(), StatusCliente.ATIVO), produto(UUID.randomUUID(), 10, StatusProduto.DISPONIVEL), 2);
         TestReflectionUtils.setField(pedido, "status", StatusPedido.CANCELADO);
         when(pedidoRepository.findById(pedidoId)).thenReturn(Optional.of(pedido));
 
-        Pedido resultado = pedidoService.cancelar(pedidoId);
+        assertThrows(RegraNegocioException.class, () -> pedidoService.atualizarStatus(pedidoId, StatusPedido.PAGO));
+    }
+
+    @Test
+    void atualizarStatusDeveRetornarMesmoPedidoQuandoStatusJaForAguardandoPagamento() {
+        UUID pedidoId = UUID.randomUUID();
+        Pedido pedido = pedido(pedidoId, cliente(UUID.randomUUID(), StatusCliente.ATIVO), produto(UUID.randomUUID(), 10, StatusProduto.DISPONIVEL), 2);
+        when(pedidoRepository.findById(pedidoId)).thenReturn(Optional.of(pedido));
+
+        Pedido resultado = pedidoService.atualizarStatus(pedidoId, StatusPedido.AGUARDANDO_PAGAMENTO);
 
         assertSame(pedido, resultado);
     }

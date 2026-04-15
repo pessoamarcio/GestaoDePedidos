@@ -36,6 +36,7 @@ class PedidoResponseTest {
 
         assertEquals(pedidoId, response.id());
         assertEquals(clienteId, response.clienteId());
+        assertEquals("Maria", response.clienteNome());
         assertEquals(new BigDecimal("9999.80"), response.valorTotal());
         assertEquals(1, response.itens().size());
         assertEquals(produtoId, response.itens().getFirst().produtoId());

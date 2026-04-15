@@ -86,4 +86,27 @@ class ProdutoServiceTest {
 
         assertThrows(NaoEncontradoException.class, () -> produtoService.buscarPorId(id));
     }
+
+    @Test
+    void adicionarEstoqueDeveAtualizarQuantidadeESalvarProdutoDisponivel() {
+        UUID id = UUID.randomUUID();
+        Produto produto = new Produto("Notebook", new BigDecimal("4999.90"), 0, StatusProduto.INDISPONIVEL);
+        when(produtoRepository.findById(id)).thenReturn(Optional.of(produto));
+        when(produtoRepository.save(produto)).thenReturn(produto);
+
+        Produto resultado = produtoService.adicionarEstoque(id, 5);
+
+        assertSame(produto, resultado);
+        assertEquals(5, resultado.getQuantidadeEmEstoque());
+        assertEquals(StatusProduto.DISPONIVEL, resultado.getStatus());
+        verify(produtoRepository).save(produto);
+    }
+
+    @Test
+    void adicionarEstoqueDeveLancarExcecaoQuandoProdutoNaoEncontrado() {
+        UUID id = UUID.randomUUID();
+        when(produtoRepository.findById(id)).thenReturn(Optional.empty());
+
+        assertThrows(NaoEncontradoException.class, () -> produtoService.adicionarEstoque(id, 5));
+    }
 }

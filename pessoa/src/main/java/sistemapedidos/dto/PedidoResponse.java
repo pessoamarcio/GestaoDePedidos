@@ -13,6 +13,7 @@ import java.util.UUID;
 public record PedidoResponse(
         UUID id,
         UUID clienteId,
+        String clienteNome,
         StatusPedido status,
         @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss", timezone = "America/Sao_Paulo")
         OffsetDateTime criadoEm,
@@ -23,6 +24,7 @@ public record PedidoResponse(
         return new PedidoResponse(
                 pedido.getId(),
                 pedido.getCliente().getId(),
+                pedido.getCliente().getNome(),
                 pedido.getStatus(),
                 pedido.getCriadoEm(),
                 pedido.getValorTotal(),

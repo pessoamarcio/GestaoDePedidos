@@ -3,9 +3,8 @@ package sistemapedidos.controller;
 import sistemapedidos.TestReflectionUtils;
 import sistemapedidos.dto.PedidoCreateRequest;
 import sistemapedidos.dto.PedidoItemRequest;
-import sistemapedidos.dto.PedidoItensRequest;
 import sistemapedidos.dto.PedidoResponse;
-import sistemapedidos.exception.RegraNegocioException;
+import sistemapedidos.dto.PedidoStatusUpdateRequest;
 import sistemapedidos.interfaces.PedidoServiceInterface;
 import sistemapedidos.model.Cliente;
 import sistemapedidos.model.ItemPedido;
@@ -24,12 +23,9 @@ import org.springframework.http.ResponseEntity;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -58,6 +54,7 @@ class PedidoControllerTest {
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertEquals(pedido.getId(), response.getBody().id());
         assertEquals(clienteId, response.getBody().clienteId());
+        assertEquals("Maria", response.getBody().clienteNome());
     }
 
     @Test
@@ -68,60 +65,23 @@ class PedidoControllerTest {
         PedidoResponse response = pedidoController.buscarPorId(pedido.getId());
 
         assertEquals(pedido.getId(), response.id());
-        assertEquals(StatusPedido.CRIADO, response.status());
+        assertEquals(StatusPedido.AGUARDANDO_PAGAMENTO, response.status());
         assertEquals(1, response.itens().size());
     }
 
     @Test
-    void substituirItensDeveSomarQuantidadesPorProduto() {
+    void atualizarStatusDeveDelegarAoService() {
         Pedido pedido = criarPedidoComItem();
         UUID pedidoId = pedido.getId();
-        UUID produtoId = pedido.getItens().getFirst().getProduto().getId();
-        PedidoItensRequest request = new PedidoItensRequest(List.of(
-                new PedidoItemRequest(produtoId, 2),
-                new PedidoItemRequest(produtoId, 3)
-        ));
-        when(pedidoService.substituirItens(pedidoId, Map.of(produtoId, 5))).thenReturn(pedido);
+        PedidoStatusUpdateRequest request = new PedidoStatusUpdateRequest(StatusPedido.PAGO);
+        pedido.pagar();
+        when(pedidoService.atualizarStatus(pedidoId, request.status())).thenReturn(pedido);
 
-        PedidoResponse response = pedidoController.substituirItens(pedidoId, request);
+        PedidoResponse response = pedidoController.atualizarStatus(pedidoId, request);
 
         assertEquals(pedidoId, response.id());
-        verify(pedidoService).substituirItens(pedidoId, Map.of(produtoId, 5));
-    }
-
-    @Test
-    void substituirItensDeveFalharQuandoItemNaoTemProduto() {
-        UUID pedidoId = UUID.randomUUID();
-        PedidoItensRequest request = new PedidoItensRequest(List.of(new PedidoItemRequest(null, 2)));
-
-        RegraNegocioException exception = assertThrows(
-                RegraNegocioException.class,
-                () -> pedidoController.substituirItens(pedidoId, request)
-        );
-
-        assertTrue(exception.getMessage().toLowerCase().contains("produto"));
-    }
-
-    @Test
-    void pagarDeveDelegarAoService() {
-        Pedido pedido = criarPedidoComItem();
-        when(pedidoService.pagar(pedido.getId())).thenReturn(pedido);
-
-        PedidoResponse response = pedidoController.pagar(pedido.getId());
-
-        assertEquals(pedido.getId(), response.id());
-        verify(pedidoService).pagar(pedido.getId());
-    }
-
-    @Test
-    void cancelarDeveDelegarAoService() {
-        Pedido pedido = criarPedidoComItem();
-        when(pedidoService.cancelar(pedido.getId())).thenReturn(pedido);
-
-        PedidoResponse response = pedidoController.cancelar(pedido.getId());
-
-        assertEquals(pedido.getId(), response.id());
-        verify(pedidoService).cancelar(pedido.getId());
+        assertEquals(StatusPedido.PAGO, response.status());
+        verify(pedidoService).atualizarStatus(pedidoId, StatusPedido.PAGO);
     }
 
     private static Pedido criarPedidoComItem() {

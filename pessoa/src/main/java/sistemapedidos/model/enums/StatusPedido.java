@@ -1,7 +1,7 @@
 package sistemapedidos.model.enums;
 
 public enum StatusPedido {
-    CRIADO,
+    AGUARDANDO_PAGAMENTO,
     CANCELADO,
     PAGO
 }

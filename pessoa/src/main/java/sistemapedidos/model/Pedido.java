@@ -35,7 +35,7 @@ public class Pedido {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private StatusPedido status = StatusPedido.CRIADO;
+    private StatusPedido status = StatusPedido.AGUARDANDO_PAGAMENTO;
 
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
     private final List<ItemPedido> itens = new ArrayList<>();
@@ -82,19 +82,6 @@ public class Pedido {
 
     public boolean estaCancelado() {
         return status == StatusPedido.CANCELADO;
-    }
-
-    public void substituirItens(List<ItemPedido> novosItens) {
-        if (status == StatusPedido.PAGO) {
-            throw new IllegalStateException("Pedido PAGO não pode ser alterado.");
-        }
-        if (status == StatusPedido.CANCELADO) {
-            throw new IllegalStateException("Pedido CANCELADO não pode ser alterado.");
-        }
-        itens.clear();
-        for (ItemPedido item : novosItens) {
-            adicionarItem(item);
-        }
     }
 
     public void adicionarItem(ItemPedido item) {

@@ -40,4 +40,13 @@ public class ProdutoService implements ProdutoServiceInterface {
 		return produtoRepository.findById(id)
 				.orElseThrow(() -> new NaoEncontradoException("Produto não encontrado: " + id));
 	}
+
+	@Transactional
+	@Override
+	public Produto adicionarEstoque(UUID id, int quantidade) {
+		Produto produto = produtoRepository.findById(id)
+				.orElseThrow(() -> new NaoEncontradoException("Produto não encontrado: " + id));
+		produto.devolverEstoque(quantidade);
+		return produtoRepository.save(produto);
+	}
 }

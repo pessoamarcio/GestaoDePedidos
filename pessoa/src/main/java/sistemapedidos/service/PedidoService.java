@@ -17,7 +17,6 @@ import sistemapedidos.model.enums.StatusProduto;
 import sistemapedidos.repository.ClienteRepository;
 import sistemapedidos.repository.PedidoRepository;
 import sistemapedidos.repository.ProdutoRepository;
-import sistemapedidos.utils.StreamUtils;
 
 import java.util.HashMap;
 import java.util.List;
@@ -53,7 +52,7 @@ public class PedidoService implements PedidoServiceInterface {
                 .orElseThrow(() -> new NaoEncontradoException("Cliente não encontrado: " + request.clienteId()));
 
         if (cliente.getStatus() != StatusCliente.ATIVO) {
-            throw new RegraNegocioException("Nãoo é permitido criar pedido para cliente INATIVO.");
+            throw new RegraNegocioException("Não é permitido criar pedido para cliente INATIVO.");
         }
 
         List<Produto> produtos = produtoRepository.findAllByIdForUpdate(quantidadePorProduto.keySet());
@@ -98,89 +97,34 @@ public class PedidoService implements PedidoServiceInterface {
 
     @Transactional
     @Override
-    public Pedido substituirItens(UUID pedidoId, Map<UUID, Integer> itens) {
-        Map<UUID, Integer> novaQuantidadePorProduto = validarQuantidades(itens);
-
+    public Pedido atualizarStatus(UUID pedidoId, StatusPedido status) {
         Pedido pedido = buscarPorId(pedidoId);
-
+        if (status == null) {
+            throw new RegraNegocioException("Status do pedido é obrigatório.");
+        }
+        if (pedido.getStatus() == status) {
+            return pedido;
+        }
         if (pedido.getStatus() == StatusPedido.PAGO) {
-            throw new RegraNegocioException("Pedido PAGO não pode ser alterado.");
+            throw new RegraNegocioException("Pedido PAGO não pode ter o status alterado.");
         }
         if (pedido.getStatus() == StatusPedido.CANCELADO) {
-            throw new RegraNegocioException("Pedido CANCELADO não pode ser alterado.");
+            throw new RegraNegocioException("Pedido CANCELADO não pode ter o status alterado.");
         }
 
-        Map<UUID, Integer> quantidadeAtualPorProduto = pedido.getItens().stream()
-                .collect(Collectors.toMap(
-                        item -> item.getProduto().getId(),
-                        ItemPedido::getQuantidade,
-                        Integer::sum
-                ));
-
-        Set<UUID> idsAfetados = StreamUtils.unionKeys(quantidadeAtualPorProduto, novaQuantidadePorProduto);
-        List<Produto> produtos = produtoRepository.findAllByIdForUpdate(idsAfetados);
-        validarProdutosEncontrados(idsAfetados, produtos);
-
-        Map<UUID, Produto> produtoPorId = produtos.stream()
-                .collect(Collectors.toMap(Produto::getId, Function.identity()));
-
-        for (var entry : quantidadeAtualPorProduto.entrySet()) {
-            produtoPorId.get(entry.getKey()).devolverEstoque(entry.getValue());
-        }
-
-        novaQuantidadePorProduto.keySet().stream()
-                .map(produtoPorId::get)
-                .filter(produto -> produto.getStatus() != StatusProduto.DISPONIVEL)
-                .findFirst()
-                .ifPresent(produto -> {
-                    throw new RegraNegocioException("Produto INDISPON\u00cdVEL: " + produto.getId());
-                });
-
-        novaQuantidadePorProduto.keySet().stream()
-                .map(produtoPorId::get)
-                .filter(produto -> !produto.podeVender(novaQuantidadePorProduto.get(produto.getId())))
-                .findFirst()
-                .ifPresent(produto -> {
-                    throw new RegraNegocioException("Produto sem estoque: " + produto.getId());
-                });
-
-        for (var entry : novaQuantidadePorProduto.entrySet()) {
-            produtoPorId.get(entry.getKey()).baixarEstoque(entry.getValue());
-        }
-
-        List<ItemPedido> novosItens = novaQuantidadePorProduto.entrySet().stream()
-                .map(entry -> {
-                    Produto produto = produtoPorId.get(entry.getKey());
-                    return new ItemPedido(produto, entry.getValue(), produto.getPreco());
-                })
-                .toList();
-
-        pedido.substituirItens(novosItens);
-        return pedidoRepository.save(pedido);
+        return switch (status) {
+            case AGUARDANDO_PAGAMENTO -> throw new RegraNegocioException("Pedido já está aguardando pagamento e não pode retornar para esse status.");
+            case PAGO -> pagarPedido(pedido);
+            case CANCELADO -> cancelarPedido(pedido);
+        };
     }
 
-    @Transactional
-    @Override
-    public Pedido pagar(UUID pedidoId) {
-        Pedido pedido = buscarPorId(pedidoId);
-        if (pedido.getStatus() == StatusPedido.CANCELADO) {
-            throw new RegraNegocioException("Pedido CANCELADO não pode ser pago.");
-        }
+    private Pedido pagarPedido(Pedido pedido) {
         pedido.pagar();
         return pedidoRepository.save(pedido);
     }
 
-    @Transactional
-    @Override
-    public Pedido cancelar(UUID pedidoId) {
-        Pedido pedido = buscarPorId(pedidoId);
-        if (pedido.getStatus() == StatusPedido.PAGO) {
-            throw new RegraNegocioException("Pedido PAGO não pode ser alterado.");
-        }
-        if (pedido.getStatus() == StatusPedido.CANCELADO) {
-            return pedido;
-        }
-
+    private Pedido cancelarPedido(Pedido pedido) {
         Map<UUID, Integer> quantidadePorProduto = pedido.getItens().stream()
                 .collect(Collectors.toMap(
                         item -> item.getProduto().getId(),

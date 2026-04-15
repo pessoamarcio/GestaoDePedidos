@@ -1,10 +1,8 @@
 package sistemapedidos.controller;
 
 import sistemapedidos.dto.PedidoCreateRequest;
-import sistemapedidos.dto.PedidoItemRequest;
-import sistemapedidos.dto.PedidoItensRequest;
 import sistemapedidos.dto.PedidoResponse;
-import sistemapedidos.exception.RegraNegocioException;
+import sistemapedidos.dto.PedidoStatusUpdateRequest;
 import sistemapedidos.interfaces.PedidoServiceInterface;
 import sistemapedidos.model.Pedido;
 import jakarta.validation.Valid;
@@ -18,11 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/pedidos")
@@ -46,35 +40,7 @@ public class PedidoController {
     }
 
     @PutMapping("/{id}")
-    public PedidoResponse substituirItens(@PathVariable UUID id, @RequestBody @Valid PedidoItensRequest request) {
-        return PedidoResponse.from(pedidoService.substituirItens(id, somarQuantidadesPorProduto(request.itens())));
-    }
-
-    @PostMapping("/{id}/pagar")
-    public PedidoResponse pagar(@PathVariable UUID id) {
-        return PedidoResponse.from(pedidoService.pagar(id));
-    }
-
-    @PostMapping("/{id}/cancelar")
-    public PedidoResponse cancelar(@PathVariable UUID id) {
-        return PedidoResponse.from(pedidoService.cancelar(id));
-    }
-
-    private static Map<UUID, Integer> somarQuantidadesPorProduto(List<PedidoItemRequest> itens) {
-        if (itens == null) {
-            return new HashMap<>();
-        }
-        return itens.stream()
-                .map(item -> {
-                    if (item == null || item.produtoId() == null) {
-                        throw new RegraNegocioException("Produto é obrigatório.");
-                    }
-                    return item;
-                })
-                .collect(Collectors.toMap(
-                        PedidoItemRequest::produtoId,
-                        PedidoItemRequest::quantidade,
-                        Integer::sum
-                ));
+    public PedidoResponse atualizarStatus(@PathVariable UUID id, @RequestBody @Valid PedidoStatusUpdateRequest request) {
+        return PedidoResponse.from(pedidoService.atualizarStatus(id, request.status()));
     }
 }

@@ -2,6 +2,8 @@ package sistemapedidos.controller;
 
 import sistemapedidos.TestReflectionUtils;
 import sistemapedidos.dto.ProdutoCreateRequest;
+import sistemapedidos.dto.ProdutoEstoqueRequest;
+import sistemapedidos.dto.ProdutoEstoqueResponse;
 import sistemapedidos.dto.ProdutoResponse;
 import sistemapedidos.interfaces.ProdutoServiceInterface;
 import sistemapedidos.model.Produto;
@@ -66,5 +68,21 @@ class ProdutoControllerTest {
         assertEquals(id, response.id());
         assertEquals("Notebook", response.nome());
         assertEquals(StatusProduto.DISPONIVEL, response.status());
+    }
+
+    @Test
+    void adicionarEstoqueDeveRetornarResumoDoProdutoComNovaQuantidade() {
+        UUID id = UUID.randomUUID();
+        Produto produto = new Produto("Notebook", new BigDecimal("4999.90"), 0, StatusProduto.INDISPONIVEL);
+        TestReflectionUtils.setField(produto, "id", id);
+        produto.devolverEstoque(5);
+        ProdutoEstoqueRequest request = new ProdutoEstoqueRequest(5);
+        when(produtoService.adicionarEstoque(id, request.quantidade())).thenReturn(produto);
+
+        ProdutoEstoqueResponse response = produtoController.adicionarEstoque(id, request);
+
+        assertEquals(id, response.id());
+        assertEquals("Notebook", response.nome());
+        assertEquals(5, response.quantidadeEmEstoque());
     }
 }
