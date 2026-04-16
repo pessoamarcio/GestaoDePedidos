@@ -5,6 +5,8 @@ import sistemapedidos.exception.NaoEncontradoException;
 import sistemapedidos.exception.RegraNegocioException;
 import sistemapedidos.interfaces.ProdutoServiceInterface;
 import sistemapedidos.model.Produto;
+import sistemapedidos.model.enums.StatusProduto;
+import java.util.List;
 import sistemapedidos.repository.ProdutoRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,5 +50,11 @@ public class ProdutoService implements ProdutoServiceInterface {
 				.orElseThrow(() -> new NaoEncontradoException("Produto não encontrado: " + id));
 		produto.devolverEstoque(quantidade);
 		return produtoRepository.save(produto);
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public List<Produto> buscarPorNomeEStatus(String nome) {
+		return produtoRepository.findByNomeContainingIgnoreCase(nome);
 	}
 }
