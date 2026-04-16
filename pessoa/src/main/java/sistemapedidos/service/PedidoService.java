@@ -95,6 +95,12 @@ public class PedidoService implements PedidoServiceInterface {
                 .orElseThrow(() -> new NaoEncontradoException("Pedido não encontrado: " + id));
     }
 
+    @Transactional(readOnly = true)
+    @Override
+    public List<Pedido> buscarPorCpfCliente(String cpf) {
+        return pedidoRepository.findAllByClienteCpfOrderByCriadoEmDesc(cpf);
+    }
+
     @Transactional
     @Override
     public Pedido atualizarStatus(UUID pedidoId, StatusPedido status) {

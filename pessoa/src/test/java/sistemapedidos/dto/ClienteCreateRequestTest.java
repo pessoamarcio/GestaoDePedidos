@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ClienteCreateRequestTest {
 
@@ -19,6 +20,16 @@ class ClienteCreateRequestTest {
 
         Set<ConstraintViolation<ClienteCreateRequest>> violations = validator.validate(request);
 
-        assertEquals(3, violations.size());
+        assertEquals(4, violations.size());
+    }
+
+    @Test
+    void deveValidarCpfComOnzeNumeros() {
+        ClienteCreateRequest request = new ClienteCreateRequest("Maria", "12345", "maria@email.com", null);
+
+        Set<ConstraintViolation<ClienteCreateRequest>> violations = validator.validate(request);
+
+        assertEquals(1, violations.size());
+        assertTrue(violations.stream().anyMatch(violation -> violation.getMessage().equals("CPF deve conter 11 números")));
     }
 }

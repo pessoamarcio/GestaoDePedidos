@@ -1,10 +1,5 @@
 package sistemapedidos.controller;
 
-import sistemapedidos.dto.PedidoCreateRequest;
-import sistemapedidos.dto.PedidoResponse;
-import sistemapedidos.dto.PedidoStatusUpdateRequest;
-import sistemapedidos.interfaces.PedidoServiceInterface;
-import sistemapedidos.model.Pedido;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,8 +9,15 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import sistemapedidos.dto.PedidoCreateRequest;
+import sistemapedidos.dto.PedidoResponse;
+import sistemapedidos.dto.PedidoStatusUpdateRequest;
+import sistemapedidos.interfaces.PedidoServiceInterface;
+import sistemapedidos.model.Pedido;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -37,6 +39,13 @@ public class PedidoController {
     @GetMapping("/{id}")
     public PedidoResponse buscarPorId(@PathVariable UUID id) {
         return PedidoResponse.from(pedidoService.buscarPorId(id));
+    }
+
+    @GetMapping
+    public List<PedidoResponse> buscarPorCpfCliente(@RequestParam String cpf) {
+        return pedidoService.buscarPorCpfCliente(cpf).stream()
+                .map(PedidoResponse::from)
+                .toList();
     }
 
     @PutMapping("/{id}")

@@ -1,5 +1,12 @@
 package sistemapedidos.controller;
 
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import sistemapedidos.TestReflectionUtils;
 import sistemapedidos.dto.PedidoCreateRequest;
 import sistemapedidos.dto.PedidoItemRequest;
@@ -13,13 +20,6 @@ import sistemapedidos.model.Produto;
 import sistemapedidos.model.enums.StatusCliente;
 import sistemapedidos.model.enums.StatusPedido;
 import sistemapedidos.model.enums.StatusProduto;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -67,6 +67,18 @@ class PedidoControllerTest {
         assertEquals(pedido.getId(), response.id());
         assertEquals(StatusPedido.AGUARDANDO_PAGAMENTO, response.status());
         assertEquals(1, response.itens().size());
+    }
+
+    @Test
+    void buscarPorCpfClienteDeveRetornarListaDePedidos() {
+        Pedido pedido = criarPedidoComItem();
+        when(pedidoService.buscarPorCpfCliente("12345678901")).thenReturn(List.of(pedido));
+
+        List<PedidoResponse> response = pedidoController.buscarPorCpfCliente("12345678901");
+
+        assertEquals(1, response.size());
+        assertEquals(pedido.getId(), response.getFirst().id());
+        assertEquals("Maria", response.getFirst().clienteNome());
     }
 
     @Test

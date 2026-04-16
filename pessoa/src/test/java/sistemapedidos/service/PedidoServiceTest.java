@@ -23,6 +23,7 @@ import sistemapedidos.repository.PedidoRepository;
 import sistemapedidos.repository.ProdutoRepository;
 
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -118,6 +119,22 @@ class PedidoServiceTest {
         when(pedidoRepository.findById(pedidoId)).thenReturn(Optional.empty());
 
         assertThrows(NaoEncontradoException.class, () -> pedidoService.buscarPorId(pedidoId));
+    }
+
+    @Test
+    void buscarPorCpfClienteDeveRetornarPedidosDoCliente() {
+        String cpf = "12345678901";
+        Pedido pedidoMaisNovo = pedido(UUID.randomUUID(), cliente(UUID.randomUUID(), StatusCliente.ATIVO), produto(UUID.randomUUID(), 10, StatusProduto.DISPONIVEL), 2);
+        Pedido pedidoMaisAntigo = pedido(UUID.randomUUID(), cliente(UUID.randomUUID(), StatusCliente.ATIVO), produto(UUID.randomUUID(), 10, StatusProduto.DISPONIVEL), 1);
+        TestReflectionUtils.setField(pedidoMaisNovo, "criadoEm", OffsetDateTime.now());
+        TestReflectionUtils.setField(pedidoMaisAntigo, "criadoEm", OffsetDateTime.now().minusDays(1));
+        when(pedidoRepository.findAllByClienteCpfOrderByCriadoEmDesc(cpf)).thenReturn(List.of(pedidoMaisNovo, pedidoMaisAntigo));
+
+        List<Pedido> resultado = pedidoService.buscarPorCpfCliente(cpf);
+
+        assertEquals(2, resultado.size());
+        assertSame(pedidoMaisNovo, resultado.getFirst());
+        assertSame(pedidoMaisAntigo, resultado.get(1));
     }
 
     @Test
