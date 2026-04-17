@@ -14,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -57,5 +58,19 @@ class ClienteControllerTest {
         assertEquals(id, response.id());
         assertEquals("Maria", response.nome());
         assertEquals("12345678901", response.cpf());
+    }
+
+    @Test
+    void buscarPorCpfOuNomeDeveRetornarListaDeClientes() {
+        Cliente cliente = new Cliente("Maria", "maria@email.com", "12345678901", StatusCliente.ATIVO);
+        UUID id = UUID.randomUUID();
+        TestReflectionUtils.setField(cliente, "id", id);
+        when(clienteService.buscarPorCpfOuNome(null, "Maria")).thenReturn(List.of(cliente));
+
+        List<ClienteResponse> response = clienteController.buscarPorCpfOuNome(null, "Maria");
+
+        assertEquals(1, response.size());
+        assertEquals(id, response.get(0).id());
+        assertEquals("Maria", response.get(0).nome());
     }
 }

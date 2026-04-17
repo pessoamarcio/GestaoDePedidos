@@ -14,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -108,5 +109,28 @@ class ProdutoServiceTest {
         when(produtoRepository.findById(id)).thenReturn(Optional.empty());
 
         assertThrows(NaoEncontradoException.class, () -> produtoService.adicionarEstoque(id, 5));
+    }
+
+    @Test
+    void buscarPorNomeEStatusDeveBuscarPorStatusQuandoSomenteStatusInformado() {
+        Produto produto = new Produto("Notebook", new BigDecimal("4999.90"), 10, StatusProduto.DISPONIVEL);
+        when(produtoRepository.findByStatus(StatusProduto.DISPONIVEL)).thenReturn(List.of(produto));
+
+        List<Produto> resultado = produtoService.buscarPorNomeEStatus(null, StatusProduto.DISPONIVEL);
+
+        assertEquals(1, resultado.size());
+        assertSame(produto, resultado.get(0));
+    }
+
+    @Test
+    void buscarPorNomeEStatusDeveBuscarPorNomeEStatusQuandoAmbosInformados() {
+        Produto produto = new Produto("Notebook", new BigDecimal("4999.90"), 10, StatusProduto.DISPONIVEL);
+        when(produtoRepository.findByNomeContainingIgnoreCaseAndStatus("Note", StatusProduto.DISPONIVEL))
+                .thenReturn(List.of(produto));
+
+        List<Produto> resultado = produtoService.buscarPorNomeEStatus("Note", StatusProduto.DISPONIVEL);
+
+        assertEquals(1, resultado.size());
+        assertSame(produto, resultado.get(0));
     }
 }

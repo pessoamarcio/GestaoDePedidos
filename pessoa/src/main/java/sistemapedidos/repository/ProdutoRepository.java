@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import sistemapedidos.model.Produto;
 import sistemapedidos.model.enums.StatusProduto;
-import java.util.List;
 
 import java.util.Collection;
 import java.util.List;
@@ -21,4 +20,6 @@ public interface ProdutoRepository extends JpaRepository<Produto, UUID> {
 	@Query("select p from Produto p where p.id in :ids")
 	List<Produto> findAllByIdForUpdate(@Param("ids") Collection<UUID> ids);
 	List<Produto> findByNomeContainingIgnoreCase(String nome);
+	List<Produto> findByStatus(StatusProduto status);
+	List<Produto> findByNomeContainingIgnoreCaseAndStatus(String nome, StatusProduto status);
 }

@@ -6,6 +6,7 @@ import sistemapedidos.dto.ProdutoEstoqueResponse;
 import sistemapedidos.dto.ProdutoResponse;
 import sistemapedidos.interfaces.ProdutoServiceInterface;
 import sistemapedidos.model.Produto;
+import sistemapedidos.model.enums.StatusProduto;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.HttpStatus;
@@ -49,9 +50,10 @@ public class ProdutoController {
 
 	@GetMapping
 	public List<ProdutoResponse> buscarPorNomeEStatus(
-			@RequestParam String nome
+			@RequestParam(required = false) String nome,
+			@RequestParam(required = false) StatusProduto status
 	) {
-		return produtoService.buscarPorNomeEStatus(nome)
+		return produtoService.buscarPorNomeEStatus(nome, status)
 				.stream()
 				.map(ProdutoResponse::from)
 				.toList();

@@ -1,18 +1,22 @@
 package sistemapedidos.interfaces;
 
-import sistemapedidos.exception.NaoEncontradoException;
-import sistemapedidos.exception.RegraNegocioException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import sistemapedidos.exception.NaoEncontradoException;
+import sistemapedidos.exception.RegraNegocioException;
+import sistemapedidos.utils.HttpMessageErrorTranslator;
 
 import java.util.List;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
+
+	private final HttpMessageErrorTranslator httpMessageErrorTranslator = new HttpMessageErrorTranslator();
 
 	@ExceptionHandler(NaoEncontradoException.class)
 	public ResponseEntity<ApiErrorResponse> handleNaoEncontrado(NaoEncontradoException ex) {
@@ -32,7 +36,19 @@ public class ApiExceptionHandler {
 				.map(this::toCampoInvalido)
 				.toList();
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-				.body(new ApiValidationErrorResponse("Requisição inválida.", campos));
+				.body(new ApiValidationErrorResponse("Requisicao invalida.", campos));
+	}
+
+	@ExceptionHandler(HttpMessageNotReadableException.class)
+	public ResponseEntity<ApiErrorResponse> handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
+		String mensagem = httpMessageErrorTranslator.traduzir(ex);
+		if (mensagem != null) {
+			return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+					.body(new ApiErrorResponse(mensagem));
+		}
+
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+				.body(new ApiErrorResponse("Corpo da requisicao invalido."));
 	}
 
 	private ApiValidationErrorResponse.CampoInvalido toCampoInvalido(FieldError fieldError) {

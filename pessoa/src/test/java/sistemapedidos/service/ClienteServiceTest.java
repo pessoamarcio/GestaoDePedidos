@@ -13,6 +13,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -86,5 +87,27 @@ class ClienteServiceTest {
         when(clienteRepository.findById(id)).thenReturn(Optional.empty());
 
         assertThrows(NaoEncontradoException.class, () -> clienteService.buscarPorId(id));
+    }
+
+    @Test
+    void buscarPorCpfOuNomeDeveBuscarPorCpfQuandoInformado() {
+        Cliente cliente = new Cliente("Maria", "maria@email.com", "12345678901", StatusCliente.ATIVO);
+        when(clienteRepository.findByCpf("12345678901")).thenReturn(Optional.of(cliente));
+
+        List<Cliente> resultado = clienteService.buscarPorCpfOuNome("12345678901", null);
+
+        assertEquals(1, resultado.size());
+        assertSame(cliente, resultado.get(0));
+    }
+
+    @Test
+    void buscarPorCpfOuNomeDeveBuscarPorNomeQuandoCpfNaoInformado() {
+        Cliente cliente = new Cliente("Maria", "maria@email.com", "12345678901", StatusCliente.ATIVO);
+        when(clienteRepository.findByNomeContainingIgnoreCase("Maria")).thenReturn(List.of(cliente));
+
+        List<Cliente> resultado = clienteService.buscarPorCpfOuNome(null, "Maria");
+
+        assertEquals(1, resultado.size());
+        assertSame(cliente, resultado.get(0));
     }
 }

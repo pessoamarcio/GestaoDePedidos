@@ -54,7 +54,19 @@ public class ProdutoService implements ProdutoServiceInterface {
 
 	@Transactional(readOnly = true)
 	@Override
-	public List<Produto> buscarPorNomeEStatus(String nome) {
-		return produtoRepository.findByNomeContainingIgnoreCase(nome);
+	public List<Produto> buscarPorNomeEStatus(String nome, StatusProduto status) {
+		boolean temNome = nome != null && !nome.isBlank();
+		boolean temStatus = status != null;
+
+		if (temNome && temStatus) {
+			return produtoRepository.findByNomeContainingIgnoreCaseAndStatus(nome, status);
+		}
+		if (temNome) {
+			return produtoRepository.findByNomeContainingIgnoreCase(nome);
+		}
+		if (temStatus) {
+			return produtoRepository.findByStatus(status);
+		}
+		return produtoRepository.findAll();
 	}
 }

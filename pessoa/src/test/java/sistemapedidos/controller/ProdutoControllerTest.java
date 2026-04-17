@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -84,5 +85,19 @@ class ProdutoControllerTest {
         assertEquals(id, response.id());
         assertEquals("Notebook", response.nome());
         assertEquals(5, response.quantidadeEmEstoque());
+    }
+
+    @Test
+    void buscarPorNomeEStatusDeveRetornarListaFiltrada() {
+        UUID id = UUID.randomUUID();
+        Produto produto = new Produto("Notebook", new BigDecimal("4999.90"), 10, StatusProduto.DISPONIVEL);
+        TestReflectionUtils.setField(produto, "id", id);
+        when(produtoService.buscarPorNomeEStatus("Note", StatusProduto.DISPONIVEL)).thenReturn(List.of(produto));
+
+        List<ProdutoResponse> response = produtoController.buscarPorNomeEStatus("Note", StatusProduto.DISPONIVEL);
+
+        assertEquals(1, response.size());
+        assertEquals(id, response.get(0).id());
+        assertEquals(StatusProduto.DISPONIVEL, response.get(0).status());
     }
 }

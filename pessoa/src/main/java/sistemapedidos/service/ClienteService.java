@@ -9,6 +9,7 @@ import sistemapedidos.repository.ClienteRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -40,5 +41,18 @@ public class ClienteService implements ClienteServiceInterface {
 	public Cliente buscarPorId(UUID id) {
 		return clienteRepository.findById(id)
 				.orElseThrow(() -> new NaoEncontradoException("Cliente não encontrado: " + id));
+	}
+	@Transactional(readOnly = true)
+	@Override
+	public List<Cliente> buscarPorCpfOuNome(String cpf, String nome) {
+		if (cpf != null && !cpf.isBlank()) {
+			return clienteRepository.findByCpf(cpf)
+					.map(List::of)
+					.orElseGet(List::of);
+		}
+		if (nome != null && !nome.isBlank()) {
+			return clienteRepository.findByNomeContainingIgnoreCase(nome);
+		}
+		return clienteRepository.findAll();
 	}
 }

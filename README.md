@@ -1,6 +1,6 @@
-# Sistema de Gestão de Pedidos da Empresa Pessoa (API REST)
+# Sistema de Gestao de Pedidos da Empresa Pessoa (API REST)
 
-Backend em Spring Boot + Spring Data JPA para gestão de **clientes**, **produtos** e **pedidos**, com regras de negócio (estoque, status e imutabilidade de pedido pago) aplicadas no service.
+Backend em Spring Boot + Spring Data JPA para gestao de clientes, produtos e pedidos, com regras de negocio de estoque, status e imutabilidade de pedido pago aplicadas na camada de servico.
 
 ## Tecnologias
 
@@ -68,6 +68,25 @@ Response 200:
 }
 ```
 
+`GET /api/clientes?cpf=12345678901`  
+Busca cliente por CPF.
+
+Response 200:
+```json
+[
+  {
+    "id": "uuid",
+    "nome": "Maria Silva",
+    "email": "maria@exemplo.com",
+    "cpf": "12345678901",
+    "status": "ATIVO"
+  }
+]
+```
+
+`GET /api/clientes?nome=Maria`  
+Busca clientes por nome.
+
 ### Produtos
 
 `POST /api/produtos`  
@@ -107,6 +126,25 @@ Response 200:
   "status": "DISPONIVEL"
 }
 ```
+
+`PATCH /api/produtos/{id}/estoque`  
+Adiciona estoque ao produto.
+
+Request:
+```json
+{
+  "quantidade": 5
+}
+```
+
+`GET /api/produtos?nome=Note`  
+Busca produtos por nome.
+
+`GET /api/produtos?status=DISPONIVEL`  
+Busca produtos por status.
+
+`GET /api/produtos?nome=Note&status=DISPONIVEL`  
+Busca produtos combinando nome e status.
 
 ### Pedidos
 
@@ -157,14 +195,16 @@ Request:
 }
 ```
 
-## Regras de negócio (resumo)
+## Regras de negocio
 
-- Cliente: CPF e e-mail devem ser únicos.
-- Produto: nome deve ser único.
+- Cliente: CPF e e-mail devem ser unicos.
+- Cliente: busca pode ser feita por CPF ou nome.
+- Produto: nome deve ser unico.
+- Produto: busca pode ser feita por nome, status ou combinando ambos.
 - Pedido: deve ter ao menos 1 produto.
-- Estoque: não permite vender acima da quantidade disponível.
-- Status: pedido nasce como `AGUARDANDO_PAGAMENTO` e só pode ir para `PAGO` ou `CANCELADO`; pedidos `PAGO` e `CANCELADO` não podem ser alterados.
-- Cliente INATIVO não pode criar pedido.
+- Estoque: nao permite vender acima da quantidade disponivel.
+- Status: pedido nasce como `AGUARDANDO_PAGAMENTO` e so pode ir para `PAGO` ou `CANCELADO`; pedidos `PAGO` e `CANCELADO` nao podem ser alterados.
+- Cliente `INATIVO` nao pode criar pedido.
 
 ## Banco de dados
 
@@ -181,20 +221,15 @@ Relacionamentos:
 - `pedidos` 1:N `itens_pedido`
 - `produtos` 1:N `itens_pedido`
 
-Observações:
+Observacoes:
 
-- `cpf` e `email` são únicos no banco.
-- `nome` do produto é validado como único na camada de serviço.
-- `itens_pedido` guarda o preço do produto no momento da compra.
+- `cpf` e `email` sao unicos no banco.
+- `nome` do produto e validado como unico na camada de servico.
+- `itens_pedido` guarda o preco do produto no momento da compra.
 
-## Padrão de repositórios
+## Erros e validacao
 
-O projeto separa a classe de repositório (ex: `ClienteRepository`) da interface Spring Data (`ClienteRepositoryJpa`).
-As classes concretas delegam para as interfaces `*Jpa` geradas automaticamente pelo Spring Data JPA.
-
-## Erros e validação
-
-Erros de negócio e validação retornam HTTP 400 com payload simples:
+Erros de negocio e validacao retornam HTTP 400 com payload simples:
 
 ```json
 {
@@ -202,13 +237,13 @@ Erros de negócio e validação retornam HTTP 400 com payload simples:
 }
 ```
 
-Para erros de validação (Bean Validation), o payload inclui os campos inválidos:
+Para erros de validacao (Bean Validation), o payload inclui os campos invalidos:
 
 ```json
 {
   "mensagem": "Requisicao invalida.",
   "campos": [
-    { "campo": "email", "mensagem": "email inválido" }
+    { "campo": "email", "mensagem": "email invalido" }
   ]
 }
 ```
