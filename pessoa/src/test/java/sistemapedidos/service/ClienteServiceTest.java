@@ -34,8 +34,8 @@ class ClienteServiceTest {
 
     @Test
     void cadastrarDeveSalvarClienteQuandoEmailNaoExiste() {
-        ClienteCreateRequest request = new ClienteCreateRequest("Maria", "12345678901", "maria@email.com", StatusCliente.ATIVO);
-        Cliente salvo = new Cliente(request.nome(), request.email(), request.cpf(), request.status());
+        ClienteCreateRequest request = new ClienteCreateRequest("Maria", "12345678901", "maria@email.com");
+        Cliente salvo = new Cliente(request.nome(), request.email(), request.cpf(), StatusCliente.ATIVO);
         when(clienteRepository.existsByEmailIgnoreCase(request.email())).thenReturn(false);
         when(clienteRepository.existsByCpf(request.cpf())).thenReturn(false);
         when(clienteRepository.save(org.mockito.ArgumentMatchers.any(Cliente.class))).thenReturn(salvo);
@@ -48,12 +48,12 @@ class ClienteServiceTest {
         assertEquals(request.nome(), captor.getValue().getNome());
         assertEquals(request.email(), captor.getValue().getEmail());
         assertEquals(request.cpf(), captor.getValue().getCpf());
-        assertEquals(request.status(), captor.getValue().getStatus());
+        assertEquals(StatusCliente.ATIVO, captor.getValue().getStatus());
     }
 
     @Test
     void cadastrarDeveLancarExcecaoQuandoEmailJaExiste() {
-        ClienteCreateRequest request = new ClienteCreateRequest("Maria", "12345678901", "maria@email.com", StatusCliente.ATIVO);
+        ClienteCreateRequest request = new ClienteCreateRequest("Maria", "12345678901", "maria@email.com");
         when(clienteRepository.existsByEmailIgnoreCase(request.email())).thenReturn(true);
 
         assertThrows(RegraNegocioException.class,
@@ -62,7 +62,7 @@ class ClienteServiceTest {
 
     @Test
     void cadastrarDeveLancarExcecaoQuandoCpfJaExiste() {
-        ClienteCreateRequest request = new ClienteCreateRequest("Maria", "12345678901", "maria@email.com", StatusCliente.ATIVO);
+        ClienteCreateRequest request = new ClienteCreateRequest("Maria", "12345678901", "maria@email.com");
         when(clienteRepository.existsByEmailIgnoreCase(request.email())).thenReturn(false);
         when(clienteRepository.existsByCpf(request.cpf())).thenReturn(true);
 

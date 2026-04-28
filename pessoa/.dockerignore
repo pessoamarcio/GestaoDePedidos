@@ -1,0 +1,8 @@
+target/
+.idea/
+.run/
+*.log
+run*.err
+run*.log
+**/.DS_Store
+**/Thumbs.db

@@ -3,7 +3,6 @@ package sistemapedidos.dto;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
-import sistemapedidos.model.enums.StatusCliente;
 
 public record ClienteCreateRequest(
         @NotBlank(message = "nome é obrigatório")
@@ -13,6 +12,6 @@ public record ClienteCreateRequest(
         String cpf,
         @NotBlank(message = "email é obrigatório")
         @Email(message = "email inválido")
-        String email,
-        StatusCliente status
+        String email
 ) {}
+

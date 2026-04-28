@@ -32,8 +32,8 @@ class ClienteControllerTest {
 
     @Test
     void cadastrarDeveRetornarCreatedComClienteResponse() {
-        ClienteCreateRequest request = new ClienteCreateRequest("Maria", "12345678901", "maria@email.com", StatusCliente.ATIVO);
-        Cliente cliente = new Cliente(request.nome(), request.email(), request.cpf(), request.status());
+        ClienteCreateRequest request = new ClienteCreateRequest("Maria", "12345678901", "maria@email.com");
+        Cliente cliente = new Cliente(request.nome(), request.email(), request.cpf(), StatusCliente.ATIVO);
         UUID id = UUID.randomUUID();
         TestReflectionUtils.setField(cliente, "id", id);
         when(clienteService.cadastrar(request)).thenReturn(cliente);
@@ -44,6 +44,7 @@ class ClienteControllerTest {
         assertInstanceOf(ClienteResponse.class, response.getBody());
         assertEquals(id, response.getBody().id());
         assertEquals("12345678901", response.getBody().cpf());
+        assertEquals(StatusCliente.ATIVO, response.getBody().status());
     }
 
     @Test
@@ -58,6 +59,7 @@ class ClienteControllerTest {
         assertEquals(id, response.id());
         assertEquals("Maria", response.nome());
         assertEquals("12345678901", response.cpf());
+        assertEquals(StatusCliente.ATIVO, response.status());
     }
 
     @Test

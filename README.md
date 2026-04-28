@@ -247,3 +247,35 @@ Para erros de validacao (Bean Validation), o payload inclui os campos invalidos:
   ]
 }
 ```
+# Docker
+
+## Comandos
+
+Criar (buildar) as imagens:
+
+```bash
+docker compose build
+```
+
+Start (subir a aplicacao e um MySQL local):
+
+```bash
+docker compose up -d
+```
+
+Stop (parar os containers):
+
+```bash
+docker compose stop
+```
+
+Drop (derrubar e remover containers, rede e volumes do projeto):
+
+```bash
+docker compose down -v
+```
+
+
+Endpoints:
+- App: http://localhost:8080
+- Swagger: http://localhost:8080/swagger-ui.html

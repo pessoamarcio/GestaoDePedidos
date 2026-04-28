@@ -32,7 +32,7 @@ public class ClienteService implements ClienteServiceInterface {
 		}
 
 		return clienteRepository.save(
-				new Cliente(request.nome(), request.email(), request.cpf(), request.status())
+				new Cliente(request.nome(), request.email(), request.cpf())
 		);
 	}
 
