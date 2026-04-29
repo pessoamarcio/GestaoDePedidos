@@ -269,6 +269,12 @@ Stop (parar os containers):
 docker compose stop
 ```
 
+Atualizar (atualizar a imagem do container):
+
+```bash
+docker compose pull
+```
+
 Drop (derrubar e remover containers, rede e volumes do projeto):
 
 ```bash

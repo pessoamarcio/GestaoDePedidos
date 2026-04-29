@@ -11,11 +11,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import sistemapedidos.dto.PedidoCreateRequest;
 import sistemapedidos.dto.PedidoResponse;
-import sistemapedidos.dto.PedidoStatusUpdateRequest;
+import sistemapedidos.exception.RegraNegocioException;
 import sistemapedidos.interfaces.PedidoServiceInterface;
 import sistemapedidos.model.Pedido;
+import sistemapedidos.model.enums.StatusPedido;
 
 import java.util.List;
 import java.util.UUID;
@@ -49,7 +52,18 @@ public class PedidoController {
     }
 
     @PutMapping("/{id}")
-    public PedidoResponse atualizarStatus(@PathVariable UUID id, @RequestBody @Valid PedidoStatusUpdateRequest request) {
-        return PedidoResponse.from(pedidoService.atualizarStatus(id, request.status()));
+    public PedidoResponse atualizarStatus(
+            @PathVariable UUID id,
+            @Parameter(
+                    //description = "Available values: PAGO, CANCELADO",
+                    schema = @Schema(allowableValues = {"PAGO", "CANCELADO"})
+            )
+            @RequestParam StatusPedido status
+    ) {
+        if (status != StatusPedido.PAGO && status != StatusPedido.CANCELADO) {
+            throw new RegraNegocioException("Status inválido para atualização. Use PAGO ou CANCELADO.");
+        }
+
+        return PedidoResponse.from(pedidoService.atualizarStatus(id, status));
     }
 }

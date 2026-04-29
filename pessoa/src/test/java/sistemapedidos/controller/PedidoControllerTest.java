@@ -11,7 +11,6 @@ import sistemapedidos.TestReflectionUtils;
 import sistemapedidos.dto.PedidoCreateRequest;
 import sistemapedidos.dto.PedidoItemRequest;
 import sistemapedidos.dto.PedidoResponse;
-import sistemapedidos.dto.PedidoStatusUpdateRequest;
 import sistemapedidos.interfaces.PedidoServiceInterface;
 import sistemapedidos.model.Cliente;
 import sistemapedidos.model.ItemPedido;
@@ -85,11 +84,24 @@ class PedidoControllerTest {
     void atualizarStatusDeveDelegarAoService() {
         Pedido pedido = criarPedidoComItem();
         UUID pedidoId = pedido.getId();
-        PedidoStatusUpdateRequest request = new PedidoStatusUpdateRequest(StatusPedido.PAGO);
         pedido.pagar();
-        when(pedidoService.atualizarStatus(pedidoId, request.status())).thenReturn(pedido);
+        when(pedidoService.atualizarStatus(pedidoId, StatusPedido.PAGO)).thenReturn(pedido);
 
-        PedidoResponse response = pedidoController.atualizarStatus(pedidoId, request);
+        PedidoResponse response = pedidoController.atualizarStatus(pedidoId, StatusPedido.PAGO);
+
+        assertEquals(pedidoId, response.id());
+        assertEquals(StatusPedido.PAGO, response.status());
+        verify(pedidoService).atualizarStatus(pedidoId, StatusPedido.PAGO);
+    }
+
+    @Test
+    void atualizarStatusDeveAceitarStatusViaQueryParam() {
+        Pedido pedido = criarPedidoComItem();
+        UUID pedidoId = pedido.getId();
+        pedido.pagar();
+        when(pedidoService.atualizarStatus(pedidoId, StatusPedido.PAGO)).thenReturn(pedido);
+
+        PedidoResponse response = pedidoController.atualizarStatus(pedidoId, StatusPedido.PAGO);
 
         assertEquals(pedidoId, response.id());
         assertEquals(StatusPedido.PAGO, response.status());
