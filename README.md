@@ -1,6 +1,6 @@
 # Sistema de Gestao de Pedidos da Empresa Pessoa (API REST)
 
-Backend em Spring Boot + Spring Data JPA para gestao de clientes, produtos e pedidos, com regras de negocio de estoque, status e imutabilidade de pedido pago aplicadas na camada de servico.
+Backend em Spring Boot + Spring Data JPA para gestao de clientes, produtos e pedidos, com regras de negocio de estoque, status e imutabilidade de pedido pago aplicadas na camada de serviço.
 
 ## Tecnologias
 
@@ -197,14 +197,14 @@ Request:
 
 ## Regras de negocio
 
-- Cliente: CPF e e-mail devem ser unicos.
+- Cliente: CPF e e-mail devem ser únicos.
 - Cliente: busca pode ser feita por CPF ou nome.
-- Produto: nome deve ser unico.
+- Produto: nome deve ser único.
 - Produto: busca pode ser feita por nome, status ou combinando ambos.
 - Pedido: deve ter ao menos 1 produto.
-- Estoque: nao permite vender acima da quantidade disponivel.
+- Estoque: não permite vender acima da quantidade disponível.
 - Status: pedido nasce como `AGUARDANDO_PAGAMENTO` e so pode ir para `PAGO` ou `CANCELADO`; pedidos `PAGO` e `CANCELADO` nao podem ser alterados.
-- Cliente `INATIVO` nao pode criar pedido.
+- Cliente `INATIVO` não pode criar pedido.
 
 ## Banco de dados
 
@@ -223,13 +223,13 @@ Relacionamentos:
 
 Observacoes:
 
-- `cpf` e `email` sao unicos no banco.
-- `nome` do produto e validado como unico na camada de servico.
-- `itens_pedido` guarda o preco do produto no momento da compra.
+- `cpf` e `email` sao únicos no banco.
+- `nome` do produto e validado como unico na camada de serviço.
+- `itens_pedido` guarda o preço do produto no momento da compra.
 
-## Erros e validacao
+## Erros e validação
 
-Erros de negocio e validacao retornam HTTP 400 com payload simples:
+Erros de negócio e validação retornam HTTP 400 com payload simples:
 
 ```json
 {
@@ -237,7 +237,7 @@ Erros de negocio e validacao retornam HTTP 400 com payload simples:
 }
 ```
 
-Para erros de validacao (Bean Validation), o payload inclui os campos invalidos:
+Para erros de validação (Bean Validation), o payload inclui os campos inválidos:
 
 ```json
 {
@@ -282,6 +282,5 @@ docker compose down -v
 ```
 
 
-Endpoints:
-- App: http://localhost:8080
+Endpoints Swagger:
 - Swagger: http://localhost:8080/swagger-ui.html
