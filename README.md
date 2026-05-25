@@ -281,7 +281,5 @@ Drop (derrubar e remover containers, rede e volumes do projeto):
 docker compose down -v
 ```
 
-
-
 Endpoints Swagger:
 - Swagger: http://localhost:8080/swagger-ui.html
