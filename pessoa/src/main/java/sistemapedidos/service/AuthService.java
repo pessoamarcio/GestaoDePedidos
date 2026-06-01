@@ -8,10 +8,11 @@ import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-import sistemapedidos.config.security.AuthProperties;
 import sistemapedidos.config.security.JwtProperties;
 import sistemapedidos.dto.auth.AuthLoginRequest;
 import sistemapedidos.dto.auth.AuthTokenResponse;
+import sistemapedidos.model.Usuario;
+import sistemapedidos.repository.UsuarioRepository;
 
 import java.time.Instant;
 
@@ -22,35 +23,29 @@ public class AuthService {
 
 	private final JwtEncoder jwtEncoder;
 	private final JwtProperties jwtProperties;
-	private final AuthProperties authProperties;
 	private final PasswordEncoder passwordEncoder;
+	private final UsuarioRepository usuarioRepository;
 
 	public AuthService(
 			JwtEncoder jwtEncoder,
 			JwtProperties jwtProperties,
-			AuthProperties authProperties,
-			PasswordEncoder passwordEncoder
+			PasswordEncoder passwordEncoder,
+			UsuarioRepository usuarioRepository
 	) {
 		this.jwtEncoder = jwtEncoder;
 		this.jwtProperties = jwtProperties;
-		this.authProperties = authProperties;
 		this.passwordEncoder = passwordEncoder;
+		this.usuarioRepository = usuarioRepository;
 	}
 
 	public AuthTokenResponse login(AuthLoginRequest request) {
-		if (!authProperties.username().equals(request.username())) {
-			throw new ResponseStatusException(UNAUTHORIZED, "Credenciais invalidas");
-		}
+		Usuario usuario = usuarioRepository.findByLogin(request.username())
+				.orElseThrow(() -> new ResponseStatusException(UNAUTHORIZED, "Credenciais inválidas"));
 
-		boolean ok;
-		if (authProperties.passwordBcrypt() != null && !authProperties.passwordBcrypt().isBlank()) {
-			ok = passwordEncoder.matches(request.password(), authProperties.passwordBcrypt());
-		} else {
-			ok = authProperties.password() != null && authProperties.password().equals(request.password());
-		}
+		boolean ok = passwordEncoder.matches(request.password(), usuario.getPasswordHash());
 
 		if (!ok) {
-			throw new ResponseStatusException(UNAUTHORIZED, "Credenciais invalidas");
+			throw new ResponseStatusException(UNAUTHORIZED, "Credenciais inválidas");
 		}
 
 		Instant now = Instant.now();
@@ -60,7 +55,7 @@ public class AuthService {
 				.issuer(jwtProperties.issuer())
 				.issuedAt(now)
 				.expiresAt(exp)
-				.subject(request.username())
+				.subject(usuario.getLogin())
 				.claim("roles", new String[]{"ADMIN"})
 				.build();
 

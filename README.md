@@ -281,5 +281,20 @@ Drop (derrubar e remover containers, rede e volumes do projeto):
 docker compose down -v
 ```
 
+Rebuilda a imagem do docker atualizar a aplicação
+
+```bash
+docker compose up -d --buil
+```
+
+Se estiver “preso” em cache
+
+```bash
+docker compose build --no-cache app
+```
+```bash
+docker compose up -d
+```
+
 Endpoints Swagger:
 - Swagger: http://localhost:8080/swagger-ui.html
