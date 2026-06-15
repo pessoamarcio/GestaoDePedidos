@@ -72,11 +72,12 @@ public class SecurityConfig {
 	}
 
 	@Bean
-	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+	public SecurityFilterChain securityFilterChain(HttpSecurity http, SessionJwtAuthenticationConverter sessionJwtAuthenticationConverter) throws Exception {
 		return http
 				.csrf(csrf -> csrf.disable())
 				.sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(auth -> auth
+						.requestMatchers(HttpMethod.POST, "/auth/logout").authenticated()
 						.requestMatchers(
 								"/auth/**",
 								"/swagger-ui.html",
@@ -87,7 +88,7 @@ public class SecurityConfig {
 						.requestMatchers("/api/**").authenticated()
 						.anyRequest().permitAll()
 				)
-				.oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
+				.oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(sessionJwtAuthenticationConverter)))
 				.build();
 	}
 }

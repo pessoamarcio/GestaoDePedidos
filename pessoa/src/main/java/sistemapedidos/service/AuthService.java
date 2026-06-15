@@ -11,6 +11,7 @@ import org.springframework.web.server.ResponseStatusException;
 import sistemapedidos.config.security.JwtProperties;
 import sistemapedidos.dto.auth.AuthLoginRequest;
 import sistemapedidos.dto.auth.AuthTokenResponse;
+import sistemapedidos.model.UserSession;
 import sistemapedidos.model.Usuario;
 import sistemapedidos.repository.UsuarioRepository;
 
@@ -25,29 +26,40 @@ public class AuthService {
 	private final JwtProperties jwtProperties;
 	private final PasswordEncoder passwordEncoder;
 	private final UsuarioRepository usuarioRepository;
+	private final UserSessionService userSessionService;
 
 	public AuthService(
 			JwtEncoder jwtEncoder,
 			JwtProperties jwtProperties,
 			PasswordEncoder passwordEncoder,
-			UsuarioRepository usuarioRepository
+			UsuarioRepository usuarioRepository,
+			UserSessionService userSessionService
 	) {
 		this.jwtEncoder = jwtEncoder;
 		this.jwtProperties = jwtProperties;
 		this.passwordEncoder = passwordEncoder;
 		this.usuarioRepository = usuarioRepository;
+		this.userSessionService = userSessionService;
 	}
 
 	public AuthTokenResponse login(AuthLoginRequest request) {
 		Usuario usuario = usuarioRepository.findByLogin(request.username())
-				.orElseThrow(() -> new ResponseStatusException(UNAUTHORIZED, "Credenciais inválidas"));
+				.orElseThrow(() -> new ResponseStatusException(UNAUTHORIZED, "Usuário incorreto."));
 
 		boolean ok = passwordEncoder.matches(request.password(), usuario.getPasswordHash());
-
 		if (!ok) {
-			throw new ResponseStatusException(UNAUTHORIZED, "Credenciais inválidas");
+			throw new ResponseStatusException(UNAUTHORIZED, "Senha incorreta.");
 		}
 
+		UserSession session = userSessionService.issue(usuario);
+		return issueTokens(usuario, session.getSessionId());
+	}
+
+	public void logout(String sessionId) {
+		userSessionService.revoke(sessionId);
+	}
+
+	private AuthTokenResponse issueTokens(Usuario usuario, String sessionId) {
 		Instant now = Instant.now();
 		Instant exp = now.plusSeconds(jwtProperties.expiresInSeconds());
 
@@ -56,11 +68,13 @@ public class AuthService {
 				.issuedAt(now)
 				.expiresAt(exp)
 				.subject(usuario.getLogin())
+				.id(sessionId)
+				.claim("sid", sessionId)
 				.claim("roles", new String[]{"ADMIN"})
 				.build();
 
 		JwsHeader header = JwsHeader.with(MacAlgorithm.HS256).build();
-		String token = jwtEncoder.encode(JwtEncoderParameters.from(header, claims)).getTokenValue();
-		return AuthTokenResponse.bearer(token, jwtProperties.expiresInSeconds());
+		String accessToken = jwtEncoder.encode(JwtEncoderParameters.from(header, claims)).getTokenValue();
+		return AuthTokenResponse.bearer(accessToken, jwtProperties.expiresInSeconds());
 	}
 }

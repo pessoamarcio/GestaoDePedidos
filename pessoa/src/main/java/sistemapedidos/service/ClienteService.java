@@ -1,10 +1,12 @@
 package sistemapedidos.service;
 
 import sistemapedidos.dto.ClienteCreateRequest;
+import sistemapedidos.dto.EnderecoRequest;
 import sistemapedidos.exception.NaoEncontradoException;
 import sistemapedidos.exception.RegraNegocioException;
 import sistemapedidos.interfaces.ClienteServiceInterface;
 import sistemapedidos.model.Cliente;
+import sistemapedidos.model.Endereco;
 import sistemapedidos.repository.ClienteRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,7 +34,19 @@ public class ClienteService implements ClienteServiceInterface {
 		}
 
 		return clienteRepository.save(
-				new Cliente(request.nome(), request.email(), request.cpf())
+				new Cliente(request.nome(), request.email(), request.cpf(), toEndereco(request.endereco()))
+		);
+	}
+
+	private Endereco toEndereco(EnderecoRequest request) {
+		return new Endereco(
+				request.logradouro(),
+				request.numero(),
+				request.complemento(),
+				request.bairro(),
+				request.cidade(),
+				request.estado(),
+				request.cep()
 		);
 	}
 

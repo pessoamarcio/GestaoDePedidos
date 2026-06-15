@@ -2,9 +2,11 @@ package sistemapedidos.controller;
 
 import sistemapedidos.TestReflectionUtils;
 import sistemapedidos.dto.ClienteCreateRequest;
+import sistemapedidos.dto.EnderecoRequest;
 import sistemapedidos.dto.ClienteResponse;
 import sistemapedidos.interfaces.ClienteServiceInterface;
 import sistemapedidos.model.Cliente;
+import sistemapedidos.model.Endereco;
 import sistemapedidos.model.enums.StatusCliente;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,8 +34,9 @@ class ClienteControllerTest {
 
     @Test
     void cadastrarDeveRetornarCreatedComClienteResponse() {
-        ClienteCreateRequest request = new ClienteCreateRequest("Maria", "12345678901", "maria@email.com");
-        Cliente cliente = new Cliente(request.nome(), request.email(), request.cpf(), StatusCliente.ATIVO);
+        EnderecoRequest endereco = new EnderecoRequest("Rua A", "10", null, "Centro", "São Paulo", "SP", "01001000");
+        ClienteCreateRequest request = new ClienteCreateRequest("Maria", "12345678901", "maria@email.com", endereco);
+        Cliente cliente = new Cliente(request.nome(), request.email(), request.cpf(), new Endereco(endereco.logradouro(), endereco.numero(), endereco.complemento(), endereco.bairro(), endereco.cidade(), endereco.estado(), endereco.cep()));
         UUID id = UUID.randomUUID();
         TestReflectionUtils.setField(cliente, "id", id);
         when(clienteService.cadastrar(request)).thenReturn(cliente);
@@ -45,12 +48,13 @@ class ClienteControllerTest {
         assertEquals(id, response.getBody().id());
         assertEquals("12345678901", response.getBody().cpf());
         assertEquals(StatusCliente.ATIVO, response.getBody().status());
+        assertEquals("Rua A", response.getBody().endereco().logradouro());
     }
 
     @Test
     void buscarPorIdDeveRetornarClienteResponse() {
         UUID id = UUID.randomUUID();
-        Cliente cliente = new Cliente("Maria", "maria@email.com", "12345678901", StatusCliente.ATIVO);
+        Cliente cliente = new Cliente("Maria", "maria@email.com", "12345678901", new Endereco("Rua A", "10", null, "Centro", "São Paulo", "SP", "01001000"));
         TestReflectionUtils.setField(cliente, "id", id);
         when(clienteService.buscarPorId(id)).thenReturn(cliente);
 
@@ -60,11 +64,12 @@ class ClienteControllerTest {
         assertEquals("Maria", response.nome());
         assertEquals("12345678901", response.cpf());
         assertEquals(StatusCliente.ATIVO, response.status());
+        assertEquals("São Paulo", response.endereco().cidade());
     }
 
     @Test
     void buscarPorCpfOuNomeDeveRetornarListaDeClientes() {
-        Cliente cliente = new Cliente("Maria", "maria@email.com", "12345678901", StatusCliente.ATIVO);
+        Cliente cliente = new Cliente("Maria", "maria@email.com", "12345678901", new Endereco("Rua A", "10", null, "Centro", "São Paulo", "SP", "01001000"));
         UUID id = UUID.randomUUID();
         TestReflectionUtils.setField(cliente, "id", id);
         when(clienteService.buscarPorCpfOuNome(null, "Maria")).thenReturn(List.of(cliente));

@@ -16,22 +16,20 @@ class ClienteCreateRequestTest {
 
     @Test
     void deveValidarCamposObrigatorios() {
-        ClienteCreateRequest request = new ClienteCreateRequest("", "", "email-invalido");
+        ClienteCreateRequest request = new ClienteCreateRequest("", "", "email-invalido", null);
 
         Set<ConstraintViolation<ClienteCreateRequest>> violations = validator.validate(request);
 
-        // CPF vazio viola @NotBlank e @Pattern, por isso o total aqui fica 4.
-        assertEquals(4, violations.size());
+        assertEquals(5, violations.size());
     }
 
     @Test
     void deveValidarCpfComOnzeNumeros() {
-        ClienteCreateRequest request = new ClienteCreateRequest("Maria", "12345", "maria@email.com");
+        ClienteCreateRequest request = new ClienteCreateRequest("Maria", "12345", "maria@email.com", null);
 
         Set<ConstraintViolation<ClienteCreateRequest>> violations = validator.validate(request);
 
-        assertEquals(1, violations.size());
+        assertEquals(2, violations.size());
         assertTrue(violations.stream().anyMatch(violation -> violation.getMessage().contains("CPF deve conter 11")));
     }
 }
-

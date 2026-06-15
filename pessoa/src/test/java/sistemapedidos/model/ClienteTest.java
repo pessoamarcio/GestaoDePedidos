@@ -9,7 +9,7 @@ class ClienteTest {
 
     @Test
     void construtorDeveAplicarStatusPadraoQuandoNulo() {
-        Cliente cliente = new Cliente("Maria", "maria@email.com", "12345678901", null);
+        Cliente cliente = new Cliente("Maria", "maria@email.com", "12345678901", (StatusCliente) null);
 
         assertEquals(StatusCliente.ATIVO, cliente.getStatus());
     }

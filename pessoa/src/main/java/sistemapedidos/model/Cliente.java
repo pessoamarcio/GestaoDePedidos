@@ -8,6 +8,8 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 import java.util.UUID;
@@ -33,6 +35,10 @@ public class Cliente {
 	@Column(nullable = false)
 	private StatusCliente status = StatusCliente.ATIVO;
 
+	@OneToOne(cascade = jakarta.persistence.CascadeType.ALL, orphanRemoval = true, optional = false)
+	@JoinColumn(name = "endereco_id", nullable = false, unique = true)
+	private Endereco endereco;
+
 	protected Cliente() {
 	}
 
@@ -45,6 +51,11 @@ public class Cliente {
 		this.email = email;
 		this.cpf = cpf;
 		this.status = status == null ? StatusCliente.ATIVO : status;
+	}
+
+	public Cliente(String nome, String email, String cpf, Endereco endereco) {
+		this(nome, email, cpf, StatusCliente.ATIVO);
+		this.endereco = endereco;
 	}
 
 	public UUID getId() {
@@ -65,5 +76,9 @@ public class Cliente {
 
 	public StatusCliente getStatus() {
 		return status;
+	}
+
+	public Endereco getEndereco() {
+		return endereco;
 	}
 }

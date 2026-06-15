@@ -1,12 +1,12 @@
 package sistemapedidos.dto.auth;
 
 public record AuthTokenResponse(
-		String tokenType,
-		String accessToken,
-		long expiresInSeconds
+	String tokenType,
+	String accessToken,
+	long expiresInSeconds,
+	String mensagem
 ) {
-	public static AuthTokenResponse bearer(String token, long expiresInSeconds) {
-		return new AuthTokenResponse("Bearer", token, expiresInSeconds);
+	public static AuthTokenResponse bearer(String accessToken, long expiresInSeconds) {
+		return new AuthTokenResponse("Bearer", accessToken, expiresInSeconds, "Login realizado com sucesso.");
 	}
 }
-

@@ -1,9 +1,11 @@
 package sistemapedidos.service;
 
 import sistemapedidos.dto.ClienteCreateRequest;
+import sistemapedidos.dto.EnderecoRequest;
 import sistemapedidos.exception.NaoEncontradoException;
 import sistemapedidos.exception.RegraNegocioException;
 import sistemapedidos.model.Cliente;
+import sistemapedidos.model.Endereco;
 import sistemapedidos.model.enums.StatusCliente;
 import sistemapedidos.repository.ClienteRepository;
 import org.junit.jupiter.api.Test;
@@ -34,8 +36,9 @@ class ClienteServiceTest {
 
     @Test
     void cadastrarDeveSalvarClienteQuandoEmailNaoExiste() {
-        ClienteCreateRequest request = new ClienteCreateRequest("Maria", "12345678901", "maria@email.com");
-        Cliente salvo = new Cliente(request.nome(), request.email(), request.cpf(), StatusCliente.ATIVO);
+        EnderecoRequest endereco = new EnderecoRequest("Rua A", "10", null, "Centro", "São Paulo", "SP", "01001000");
+        ClienteCreateRequest request = new ClienteCreateRequest("Maria", "12345678901", "maria@email.com", endereco);
+        Cliente salvo = new Cliente(request.nome(), request.email(), request.cpf(), new Endereco(endereco.logradouro(), endereco.numero(), endereco.complemento(), endereco.bairro(), endereco.cidade(), endereco.estado(), endereco.cep()));
         when(clienteRepository.existsByEmailIgnoreCase(request.email())).thenReturn(false);
         when(clienteRepository.existsByCpf(request.cpf())).thenReturn(false);
         when(clienteRepository.save(org.mockito.ArgumentMatchers.any(Cliente.class))).thenReturn(salvo);
@@ -49,11 +52,12 @@ class ClienteServiceTest {
         assertEquals(request.email(), captor.getValue().getEmail());
         assertEquals(request.cpf(), captor.getValue().getCpf());
         assertEquals(StatusCliente.ATIVO, captor.getValue().getStatus());
+        assertEquals(endereco.logradouro(), captor.getValue().getEndereco().getLogradouro());
     }
 
     @Test
     void cadastrarDeveLancarExcecaoQuandoEmailJaExiste() {
-        ClienteCreateRequest request = new ClienteCreateRequest("Maria", "12345678901", "maria@email.com");
+        ClienteCreateRequest request = new ClienteCreateRequest("Maria", "12345678901", "maria@email.com", null);
         when(clienteRepository.existsByEmailIgnoreCase(request.email())).thenReturn(true);
 
         assertThrows(RegraNegocioException.class,
@@ -62,7 +66,7 @@ class ClienteServiceTest {
 
     @Test
     void cadastrarDeveLancarExcecaoQuandoCpfJaExiste() {
-        ClienteCreateRequest request = new ClienteCreateRequest("Maria", "12345678901", "maria@email.com");
+        ClienteCreateRequest request = new ClienteCreateRequest("Maria", "12345678901", "maria@email.com", null);
         when(clienteRepository.existsByEmailIgnoreCase(request.email())).thenReturn(false);
         when(clienteRepository.existsByCpf(request.cpf())).thenReturn(true);
 
