@@ -112,8 +112,40 @@ Request:
 {
   "nome": "Notebook",
   "preco": 3999.90,
+  "quantidadeEmEstoque": 10
+}
+```
+
+Response 201:
+```json
+{
+  "id": "uuid",
+  "nome": "Notebook",
+  "preco": 3999.90,
   "quantidadeEmEstoque": 10,
   "status": "DISPONIVEL"
+}
+```
+
+`GET /api/produtos/{id}`
+Busca produto por ID.
+
+`GET /api/produtos?nome=Notebook`
+Busca produtos por nome.
+
+`GET /api/produtos?status=DISPONIVEL`
+Busca produtos por status.
+
+`GET /api/produtos?nome=Notebook&status=DISPONIVEL`
+Busca produtos combinando nome e status.
+
+`PATCH /api/produtos/{id}/estoque`
+Adiciona quantidade ao estoque do produto.
+
+Request:
+```json
+{
+  "quantidade": 5
 }
 ```
 
@@ -132,6 +164,27 @@ Request:
 }
 ```
 
+Response 201:
+```json
+{
+  "id": "uuid",
+  "clienteId": "uuid",
+  "status": "AGUARDANDO_PAGAMENTO",
+  "itens": [
+    { "produtoId": "uuid", "quantidade": 2 }
+  ]
+}
+```
+
+`GET /api/pedidos/{id}`
+Busca pedido por ID.
+
+`GET /api/pedidos?cpf=12345678901`
+Lista pedidos de um cliente pelo CPF.
+
+`PUT /api/pedidos/{id}?status=PAGO`
+Atualiza o status do pedido para `PAGO` ou `CANCELADO`.
+
 ## Regras de negócio
 
 - Cliente: CPF e e-mail devem ser únicos.
@@ -139,6 +192,7 @@ Request:
 - Cliente: busca pode ser feita por CPF ou nome.
 - Produto: nome deve ser único.
 - Produto: busca pode ser feita por nome, status ou combinando ambos.
+- Produto: estoque pode ser incrementado por endpoint próprio.
 - Pedido: deve ter ao menos 1 produto.
 - Estoque: não permite vender acima da quantidade disponível.
 - Status: pedido nasce como `AGUARDANDO_PAGAMENTO` e só pode ir para `PAGO` ou `CANCELADO`; pedidos `PAGO` e `CANCELADO` não podem ser alterados.
