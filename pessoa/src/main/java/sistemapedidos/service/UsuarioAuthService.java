@@ -7,8 +7,10 @@ import org.springframework.web.server.ResponseStatusException;
 import sistemapedidos.dto.auth.AuthMessageResponse;
 import sistemapedidos.dto.auth.AuthRegisterRequest;
 import sistemapedidos.dto.auth.AuthRegisterResponse;
+import sistemapedidos.dto.auth.AuthUserCreateRequest;
 import sistemapedidos.dto.auth.AuthForgotPasswordRequest;
 import sistemapedidos.model.Usuario;
+import sistemapedidos.model.enums.PerfilUsuario;
 import sistemapedidos.repository.UsuarioRepository;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
@@ -33,8 +35,21 @@ public class UsuarioAuthService {
 		}
 
 		String hash = passwordEncoder.encode(request.password());
-		Usuario usuario = usuarioRepository.save(new Usuario(login, hash));
-		return AuthRegisterResponse.of(usuario.getId(), usuario.getLogin());
+		Usuario usuario = usuarioRepository.save(new Usuario(login, hash, PerfilUsuario.CLIENTE));
+		return AuthRegisterResponse.of(usuario.getId(), usuario.getLogin(), usuario.getPerfil());
+	}
+
+	@Transactional
+	public AuthRegisterResponse createUser(AuthUserCreateRequest request) {
+		String login = request.username();
+
+		if (usuarioRepository.existsByLogin(login)) {
+			throw new IllegalStateException("Usuário já existe.");
+		}
+
+		String hash = passwordEncoder.encode(request.password());
+		Usuario usuario = usuarioRepository.save(new Usuario(login, hash, request.perfil()));
+		return AuthRegisterResponse.of(usuario.getId(), usuario.getLogin(), usuario.getPerfil());
 	}
 
 	@Transactional

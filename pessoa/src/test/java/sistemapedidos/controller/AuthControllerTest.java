@@ -10,6 +10,9 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import sistemapedidos.dto.auth.AuthForgotPasswordRequest;
 import sistemapedidos.dto.auth.AuthMessageResponse;
+import sistemapedidos.dto.auth.AuthUserCreateRequest;
+import sistemapedidos.dto.auth.AuthRegisterResponse;
+import sistemapedidos.model.enums.PerfilUsuario;
 import sistemapedidos.service.AuthService;
 import sistemapedidos.service.UsuarioAuthService;
 
@@ -50,5 +53,17 @@ class AuthControllerTest {
 		assertEquals(200, response.getStatusCode().value());
 		assertEquals("Senha alterada com sucesso.", response.getBody().mensagem());
 		verify(usuarioAuthService).forgotPassword(new AuthForgotPasswordRequest("admin", "Nova@@123"));
+	}
+
+	@Test
+	void createUserDeveRetornarCreatedComPerfil() {
+		var request = new AuthUserCreateRequest("operador", "Senha@@123", PerfilUsuario.OPERADOR);
+		when(usuarioAuthService.createUser(request)).thenReturn(AuthRegisterResponse.of(10L, "operador", PerfilUsuario.OPERADOR));
+
+		ResponseEntity<AuthRegisterResponse> response = authController.createUser(request);
+
+		assertEquals(201, response.getStatusCode().value());
+		assertEquals(PerfilUsuario.OPERADOR, response.getBody().perfil());
+		verify(usuarioAuthService).createUser(request);
 	}
 }

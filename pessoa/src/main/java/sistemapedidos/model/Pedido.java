@@ -16,14 +16,13 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 @Entity
 @Table(name = "pedidos")
-public class Pedido {
+public class Pedido extends AuditoriaEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -39,9 +38,6 @@ public class Pedido {
 
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
     private final List<ItemPedido> itens = new ArrayList<>();
-
-    @Column(nullable = false)
-    private OffsetDateTime criadoEm = OffsetDateTime.now();
 
     protected Pedido() {
     }
@@ -60,10 +56,6 @@ public class Pedido {
 
     public StatusPedido getStatus() {
         return status;
-    }
-
-    public OffsetDateTime getCriadoEm() {
-        return criadoEm;
     }
 
     public List<ItemPedido> getItens() {

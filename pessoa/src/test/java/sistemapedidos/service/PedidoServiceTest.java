@@ -23,7 +23,7 @@ import sistemapedidos.repository.PedidoRepository;
 import sistemapedidos.repository.ProdutoRepository;
 
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -126,8 +126,8 @@ class PedidoServiceTest {
         String cpf = "12345678901";
         Pedido pedidoMaisNovo = pedido(UUID.randomUUID(), cliente(UUID.randomUUID(), StatusCliente.ATIVO), produto(UUID.randomUUID(), 10, StatusProduto.DISPONIVEL), 2);
         Pedido pedidoMaisAntigo = pedido(UUID.randomUUID(), cliente(UUID.randomUUID(), StatusCliente.ATIVO), produto(UUID.randomUUID(), 10, StatusProduto.DISPONIVEL), 1);
-        TestReflectionUtils.setField(pedidoMaisNovo, "criadoEm", OffsetDateTime.now());
-        TestReflectionUtils.setField(pedidoMaisAntigo, "criadoEm", OffsetDateTime.now().minusDays(1));
+        TestReflectionUtils.setField(pedidoMaisNovo, "criadoEm", Instant.now());
+        TestReflectionUtils.setField(pedidoMaisAntigo, "criadoEm", Instant.now().minusSeconds(86400));
         when(pedidoRepository.findAllByClienteCpfOrderByCriadoEmDesc(cpf)).thenReturn(List.of(pedidoMaisNovo, pedidoMaisAntigo));
 
         List<Pedido> resultado = pedidoService.buscarPorCpfCliente(cpf);

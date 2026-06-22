@@ -13,6 +13,7 @@ import sistemapedidos.dto.auth.AuthLoginRequest;
 import sistemapedidos.dto.auth.AuthTokenResponse;
 import sistemapedidos.model.UserSession;
 import sistemapedidos.model.Usuario;
+import sistemapedidos.model.enums.PerfilUsuario;
 import sistemapedidos.repository.UsuarioRepository;
 
 import java.time.Instant;
@@ -68,9 +69,10 @@ public class AuthService {
 				.issuedAt(now)
 				.expiresAt(exp)
 				.subject(usuario.getLogin())
+				.claim("uid", usuario.getId())
 				.id(sessionId)
 				.claim("sid", sessionId)
-				.claim("roles", new String[]{"ADMIN"})
+				.claim("roles", new String[]{usuario.getPerfil().name()})
 				.build();
 
 		JwsHeader header = JwsHeader.with(MacAlgorithm.HS256).build();

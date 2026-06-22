@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import sistemapedidos.dto.PedidoCreateRequest;
@@ -34,17 +35,20 @@ public class PedidoController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR', 'CLIENTE')")
     public ResponseEntity<PedidoResponse> criar(@RequestBody @Valid PedidoCreateRequest request) {
         Pedido pedido = pedidoService.criarPedido(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(PedidoResponse.from(pedido));
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
     public PedidoResponse buscarPorId(@PathVariable UUID id) {
         return PedidoResponse.from(pedidoService.buscarPorId(id));
     }
 
     @GetMapping
+    @PreAuthorize("isAuthenticated()")
     public List<PedidoResponse> buscarPorCpfCliente(@RequestParam String cpf) {
         return pedidoService.buscarPorCpfCliente(cpf).stream()
                 .map(PedidoResponse::from)
@@ -52,6 +56,7 @@ public class PedidoController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
     public PedidoResponse atualizarStatus(
             @PathVariable UUID id,
             @Parameter(

@@ -1,12 +1,15 @@
 package sistemapedidos.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,7 +20,9 @@ import sistemapedidos.dto.auth.AuthForgotPasswordRequest;
 import sistemapedidos.dto.auth.AuthMessageResponse;
 import sistemapedidos.dto.auth.AuthRegisterRequest;
 import sistemapedidos.dto.auth.AuthRegisterResponse;
+import sistemapedidos.dto.auth.AuthUserCreateRequest;
 import sistemapedidos.dto.auth.AuthTokenResponse;
+import sistemapedidos.model.enums.PerfilUsuario;
 import sistemapedidos.service.AuthService;
 import sistemapedidos.service.UsuarioAuthService;
 
@@ -43,9 +48,34 @@ public class AuthController {
 	}
 
 	@PostMapping("/register")
-	@Operation(summary = "Criar usuário (login)")
+	@Operation(
+			summary = "Criar usuário público",
+			description = "Cadastro aberto que cria sempre um usuário com perfil CLIENTE."
+	)
+	@ApiResponses({
+			@ApiResponse(responseCode = "201", description = "Cliente criado"),
+			@ApiResponse(responseCode = "400", description = "Requisição inválida")
+	})
 	public ResponseEntity<AuthRegisterResponse> register(@RequestBody @Valid AuthRegisterRequest request) {
 		AuthRegisterResponse response = usuarioAuthService.register(request);
+		return ResponseEntity.created(URI.create("/auth/users/" + response.id())).body(response);
+	}
+
+	@PostMapping("/users")
+	@PreAuthorize("hasRole('ADMIN')")
+	@SecurityRequirement(name = "bearerAuth")
+	@Operation(
+			summary = "Criar usuário com perfil",
+			description = "Cadastro administrativo. O perfil deve ser informado explicitamente."
+	)
+	@ApiResponses({
+			@ApiResponse(responseCode = "201", description = "Usuário criado"),
+			@ApiResponse(responseCode = "400", description = "Requisição inválida"),
+			@ApiResponse(responseCode = "401", description = "Não autenticado"),
+			@ApiResponse(responseCode = "403", description = "Sem permissão")
+	})
+	public ResponseEntity<AuthRegisterResponse> createUser(@RequestBody @Valid AuthUserCreateRequest request) {
+		AuthRegisterResponse response = usuarioAuthService.createUser(request);
 		return ResponseEntity.created(URI.create("/auth/users/" + response.id())).body(response);
 	}
 
@@ -73,4 +103,3 @@ public class AuthController {
 		return ResponseEntity.ok(AuthMessageResponse.of("Logout realizado com sucesso."));
 	}
 }
-

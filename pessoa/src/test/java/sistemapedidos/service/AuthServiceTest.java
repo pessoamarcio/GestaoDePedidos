@@ -9,10 +9,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
+import sistemapedidos.TestReflectionUtils;
 import sistemapedidos.config.security.JwtProperties;
 import sistemapedidos.dto.auth.AuthLoginRequest;
 import sistemapedidos.dto.auth.AuthTokenResponse;
 import sistemapedidos.model.Usuario;
+import sistemapedidos.model.enums.PerfilUsuario;
 import sistemapedidos.repository.UsuarioRepository;
 
 import java.time.Instant;
@@ -48,7 +50,8 @@ class AuthServiceTest {
 
 	@Test
 	void loginDeveRetornarAccessESessionToken() {
-		Usuario usuario = new Usuario("admin", "hash");
+		Usuario usuario = new Usuario("admin", "hash", PerfilUsuario.ADMIN);
+		TestReflectionUtils.setField(usuario, "id", 1L);
 		when(usuarioRepository.findByLogin("admin")).thenReturn(Optional.of(usuario));
 		when(passwordEncoder.matches("Senha@@123", "hash")).thenReturn(true);
 		when(jwtProperties.expiresInSeconds()).thenReturn(300L);
@@ -83,7 +86,8 @@ class AuthServiceTest {
 
 	@Test
 	void loginDeveFalharComMensagemEspecificaQuandoSenhaEstiverIncorreta() {
-		Usuario usuario = new Usuario("admin", "hash");
+		Usuario usuario = new Usuario("admin", "hash", PerfilUsuario.ADMIN);
+		TestReflectionUtils.setField(usuario, "id", 1L);
 		when(usuarioRepository.findByLogin("admin")).thenReturn(Optional.of(usuario));
 		when(passwordEncoder.matches("senha-errada", "hash")).thenReturn(false);
 
@@ -100,6 +104,6 @@ class AuthServiceTest {
 		ResponseStatusException ex = assertThrows(ResponseStatusException.class,
 				() -> authService.login(new AuthLoginRequest("inexistente", "senha")));
 
-		assertEquals("Usuario incorreto.", ex.getReason());
+		assertEquals("Usuário incorreto.", ex.getReason());
 	}
 }

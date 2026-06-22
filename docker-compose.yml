@@ -22,6 +22,14 @@ services:
       DB_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-sistema_gestao_pedidos}?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       DB_USER: ${MYSQL_USER:-root}
       DB_PASS: ${MYSQL_PASSWORD:-1234}
+      JWT_SECRET: ${JWT_SECRET:-change-me-to-a-very-long-secret-please}
+      AUTH_BOOTSTRAP_ENABLED: ${AUTH_BOOTSTRAP_ENABLED:-true}
+      AUTH_USERNAME: ${AUTH_USERNAME:-}
+      AUTH_PASSWORD: ${AUTH_PASSWORD:-}
+      AUTH_PASSWORD_HASH: ${AUTH_PASSWORD_HASH:-}
+      AUTH_OPERATOR_USERNAME: ${AUTH_OPERATOR_USERNAME:-}
+      AUTH_OPERATOR_PASSWORD: ${AUTH_OPERATOR_PASSWORD:-}
+      AUTH_OPERATOR_PASSWORD_HASH: ${AUTH_OPERATOR_PASSWORD_HASH:-}
     ports:
       - "${APP_PORT:-8080}:8080"
     depends_on:

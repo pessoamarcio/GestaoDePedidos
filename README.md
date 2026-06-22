@@ -28,6 +28,25 @@ Swagger UI:
 
 ## Endpoints
 
+### Autenticação e perfis
+
+Perfis disponíveis:
+
+- `ADMIN`: acesso total
+- `OPERADOR`: cadastra cliente, produto e faz consultas
+- `CLIENTE`: faz login e cria pedido
+
+Fluxos de criação de usuário:
+
+- `POST /auth/register`: cadastro público, cria sempre `CLIENTE`
+- `POST /auth/users`: cadastro administrativo, cria usuário com `perfil` explícito
+
+Regra de acesso:
+
+- toda operação protegida exige login
+- apenas `ADMIN` pode criar usuários com perfil diferente de `CLIENTE`
+- `OPERADOR` não cria `ADMIN` nem outro `OPERADOR`
+
 ### Clientes
 
 `POST /api/clientes`
@@ -73,6 +92,7 @@ Response 201:
 ```
 
 `GET /api/clientes/{id}`
+Requer autenticação.
 Busca cliente por ID.
 
 Response 200:
@@ -97,14 +117,17 @@ Response 200:
 ```
 
 `GET /api/clientes?cpf=12345678901`
+Requer autenticação.
 Busca cliente por CPF.
 
 `GET /api/clientes?nome=Maria`
+Requer autenticação.
 Busca clientes por nome.
 
 ### Produtos
 
 `POST /api/produtos`
+Requer `ADMIN` ou `OPERADOR`.
 Cria um produto.
 
 Request:
@@ -128,18 +151,23 @@ Response 201:
 ```
 
 `GET /api/produtos/{id}`
+Requer autenticação.
 Busca produto por ID.
 
 `GET /api/produtos?nome=Notebook`
+Requer autenticação.
 Busca produtos por nome.
 
 `GET /api/produtos?status=DISPONIVEL`
+Requer autenticação.
 Busca produtos por status.
 
 `GET /api/produtos?nome=Notebook&status=DISPONIVEL`
+Requer autenticação.
 Busca produtos combinando nome e status.
 
 `PATCH /api/produtos/{id}/estoque`
+Requer `ADMIN` ou `OPERADOR`.
 Adiciona quantidade ao estoque do produto.
 
 Request:
@@ -152,6 +180,7 @@ Request:
 ### Pedidos
 
 `POST /api/pedidos`
+Requer `CLIENTE`.
 Cria um pedido.
 
 Request:
@@ -177,12 +206,15 @@ Response 201:
 ```
 
 `GET /api/pedidos/{id}`
+Requer autenticação.
 Busca pedido por ID.
 
 `GET /api/pedidos?cpf=12345678901`
+Requer autenticação.
 Lista pedidos de um cliente pelo CPF.
 
 `PUT /api/pedidos/{id}?status=PAGO`
+Requer `ADMIN` ou `OPERADOR`.
 Atualiza o status do pedido para `PAGO` ou `CANCELADO`.
 
 ## Regras de negócio

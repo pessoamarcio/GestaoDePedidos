@@ -6,7 +6,9 @@ import sistemapedidos.model.Pedido;
 import sistemapedidos.model.enums.StatusPedido;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 
@@ -26,10 +28,14 @@ public record PedidoResponse(
                 pedido.getCliente().getId(),
                 pedido.getCliente().getNome(),
                 pedido.getStatus(),
-                pedido.getCriadoEm(),
+                toOffsetDateTime(pedido.getCriadoEm()),
                 pedido.getValorTotal(),
                 pedido.getItens().stream().map(ItemResponse::from).toList()
         );
+    }
+
+    private static OffsetDateTime toOffsetDateTime(Instant instant) {
+        return instant == null ? null : instant.atZone(ZoneId.of("America/Sao_Paulo")).toOffsetDateTime();
     }
 
     public record ItemResponse(

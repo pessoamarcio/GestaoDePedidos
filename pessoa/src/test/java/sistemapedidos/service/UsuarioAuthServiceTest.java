@@ -9,8 +9,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import sistemapedidos.dto.auth.AuthMessageResponse;
 import sistemapedidos.dto.auth.AuthForgotPasswordRequest;
-import sistemapedidos.dto.auth.AuthRegisterRequest;
+import sistemapedidos.dto.auth.AuthUserCreateRequest;
+import sistemapedidos.dto.auth.AuthRegisterResponse;
 import sistemapedidos.model.Usuario;
+import sistemapedidos.model.enums.PerfilUsuario;
 import sistemapedidos.repository.UsuarioRepository;
 
 import java.util.Optional;
@@ -34,7 +36,7 @@ class UsuarioAuthServiceTest {
 
 	@Test
 	void forgotPasswordDeveAtualizarSenhaQuandoUsuarioExistir() {
-		Usuario usuario = new Usuario("admin", "hash-antigo");
+		Usuario usuario = new Usuario("admin", "hash-antigo", PerfilUsuario.ADMIN);
 		when(usuarioRepository.findByLogin("admin")).thenReturn(Optional.of(usuario));
 		when(passwordEncoder.encode("Nova@@123")).thenReturn("hash-novo");
 
@@ -52,5 +54,17 @@ class UsuarioAuthServiceTest {
 
 		assertThrows(org.springframework.web.server.ResponseStatusException.class,
 				() -> usuarioAuthService.forgotPassword(new AuthForgotPasswordRequest("inexistente", "Nova@@123")));
+	}
+
+	@Test
+	void createUserDeveSalvarComPerfilInformado() {
+		when(usuarioRepository.existsByLogin("operador")).thenReturn(false);
+		when(passwordEncoder.encode("Senha@@123")).thenReturn("hash-novo");
+		when(usuarioRepository.save(org.mockito.ArgumentMatchers.any(Usuario.class)))
+				.thenAnswer(invocation -> invocation.getArgument(0));
+
+		AuthRegisterResponse response = usuarioAuthService.createUser(new AuthUserCreateRequest("operador", "Senha@@123", PerfilUsuario.OPERADOR));
+
+		assertEquals(PerfilUsuario.OPERADOR, response.perfil());
 	}
 }

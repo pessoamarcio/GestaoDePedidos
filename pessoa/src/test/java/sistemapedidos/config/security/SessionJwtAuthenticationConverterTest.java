@@ -8,6 +8,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.oauth2.jwt.Jwt;
 import sistemapedidos.model.UserSession;
+import sistemapedidos.model.Usuario;
+import sistemapedidos.model.enums.PerfilUsuario;
 import sistemapedidos.service.UserSessionService;
 
 import java.time.Instant;
@@ -37,7 +39,7 @@ class SessionJwtAuthenticationConverterTest {
 				.build();
 
 		when(userSessionService.validate("session-1")).thenReturn(
-				new UserSession(new sistemapedidos.model.Usuario("admin", "hash"), Instant.now(), Instant.now().plusSeconds(300))
+				new UserSession(new Usuario("admin", "hash", PerfilUsuario.ADMIN), Instant.now(), Instant.now().plusSeconds(300))
 		);
 
 		AbstractAuthenticationToken authentication = converter.convert(jwt);

@@ -15,7 +15,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "user_sessions")
-public class UserSession {
+public class UserSession extends AuditoriaEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

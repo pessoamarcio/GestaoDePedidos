@@ -15,7 +15,7 @@ import java.math.BigDecimal;
 
 @Entity
 @Table(name = "itens_pedido")
-public class ItemPedido {
+public class ItemPedido extends AuditoriaEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

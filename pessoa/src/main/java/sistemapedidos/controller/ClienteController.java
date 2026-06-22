@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 import java.util.UUID;
@@ -29,17 +30,20 @@ public class ClienteController {
 	}
 
 	@PostMapping
+	@PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
 	public ResponseEntity<ClienteResponse> cadastrar(@RequestBody @Valid ClienteCreateRequest request) {
 		Cliente cliente = clienteService.cadastrar(request);
 		return ResponseEntity.status(HttpStatus.CREATED).body(ClienteResponse.from(cliente));
 	}
 
 	@GetMapping("/{id}")
+	@PreAuthorize("isAuthenticated()")
 	public ClienteResponse buscarPorId(@PathVariable UUID id) {
 		return ClienteResponse.from(clienteService.buscarPorId(id));
 	}
 
 	@GetMapping
+	@PreAuthorize("isAuthenticated()")
 	public List<ClienteResponse> buscarPorCpfOuNome(
 			@RequestParam(required = false) String cpf,
 			@RequestParam(required = false) String nome

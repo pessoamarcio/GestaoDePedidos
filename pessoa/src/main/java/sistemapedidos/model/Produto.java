@@ -15,7 +15,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "produtos")
-public class Produto {
+public class Produto extends AuditoriaEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)

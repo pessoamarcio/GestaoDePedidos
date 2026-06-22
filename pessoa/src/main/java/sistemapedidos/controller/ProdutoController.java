@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.UUID;
 
@@ -33,22 +34,26 @@ public class ProdutoController {
 	}
 
 	@PostMapping
+	@PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
 	public ResponseEntity<ProdutoResponse> cadastrar(@RequestBody @Valid ProdutoCreateRequest request) {
 		Produto produto = produtoService.cadastrar(request);
 		return ResponseEntity.status(HttpStatus.CREATED).body(ProdutoResponse.from(produto));
 	}
 
 	@GetMapping("/{id}")
+	@PreAuthorize("isAuthenticated()")
 	public ProdutoResponse buscarPorId(@PathVariable UUID id) {
 		return ProdutoResponse.from(produtoService.buscarPorId(id));
 	}
 
 	@PatchMapping("/{id}/estoque")
+	@PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
 	public ProdutoEstoqueResponse adicionarEstoque(@PathVariable UUID id, @RequestBody @Valid ProdutoEstoqueRequest request) {
 		return ProdutoEstoqueResponse.from(produtoService.adicionarEstoque(id, request.quantidade()));
 	}
 
 	@GetMapping
+	@PreAuthorize("isAuthenticated()")
 	public List<ProdutoResponse> buscarPorNomeEStatus(
 			@RequestParam(required = false) String nome,
 			@RequestParam(required = false) StatusProduto status
