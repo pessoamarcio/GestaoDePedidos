@@ -22,6 +22,12 @@ Backend em Spring Boot + Spring Data JPA para gestão de clientes, produtos e pe
 ./mvnw spring-boot:run
 ```
 
+Para ambiente local com criação automática do admin:
+
+```bash
+./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
+```
+
 Swagger UI:
 
 - `http://localhost:8080/swagger-ui.html`
@@ -40,12 +46,18 @@ Fluxos de criação de usuário:
 
 - `POST /auth/register`: cadastro público, cria sempre `CLIENTE`
 - `POST /auth/users`: cadastro administrativo, cria usuário com `perfil` explícito
+- Bootstrap inicial de admin: desabilitado por padrão no profile padrão. No `dev`, ele fica ativo para facilitar o primeiro acesso.
 
 Regra de acesso:
 
 - toda operação protegida exige login
 - apenas `ADMIN` pode criar usuários com perfil diferente de `CLIENTE`
 - `OPERADOR` não cria `ADMIN` nem outro `OPERADOR`
+- nunca deixe senha fixa no código ou em `.env` versionado
+
+### Acesso inicial local
+
+No profile `dev`, a aplicação sobe com um usuário inicial `admin` e senha `Senha@@123`, ou com os valores que você definir em `AUTH_USERNAME` e `AUTH_PASSWORD`.
 
 ### Clientes
 
