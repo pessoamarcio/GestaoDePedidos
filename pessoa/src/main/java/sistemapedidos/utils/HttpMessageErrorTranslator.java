@@ -75,10 +75,10 @@ public class HttpMessageErrorTranslator {
 
 	private String montarMensagemEnumInvalido(String campo, List<String> valoresValidos) {
 		if ("status".equals(campo)) {
-			return "Atualização de status inválida. Status válidos : PAGO, CANCELADO, AGUARDANDO_PAGAMENTO.";
+			return "Atualização de status inválida. Status válidos: PAGO, CANCELADO, AGUARDANDO_PAGAMENTO.";
 		}
 		String valores = valoresValidos.stream().collect(Collectors.joining(", "));
-		return campo + " invalido. Valores validos: " + valores + ".";
+		return campo + " inválido. Valores válidos: " + valores + ".";
 	}
 
 	private <T extends Throwable> T findCause(Throwable throwable, Class<T> targetType) {

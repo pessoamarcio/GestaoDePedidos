@@ -29,7 +29,7 @@ public class ClienteService implements ClienteServiceInterface {
 		if (clienteRepository.existsByEmailIgnoreCase(request.email())) {
 			throw new RegraNegocioException("E-mail já cadastrado.");
 		}
-		if (clienteRepository.existsByCpf(request.cpf())){
+		if (clienteRepository.existsByCpf(request.cpf())) {
 			throw new RegraNegocioException("CPF já cadastrado.");
 		}
 
@@ -56,6 +56,7 @@ public class ClienteService implements ClienteServiceInterface {
 		return clienteRepository.findById(id)
 				.orElseThrow(() -> new NaoEncontradoException("Cliente não encontrado: " + id));
 	}
+
 	@Transactional(readOnly = true)
 	@Override
 	public List<Cliente> buscarPorCpfOuNome(String cpf, String nome) {

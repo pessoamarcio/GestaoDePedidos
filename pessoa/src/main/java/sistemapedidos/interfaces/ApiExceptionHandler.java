@@ -7,6 +7,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 import sistemapedidos.exception.NaoEncontradoException;
 import sistemapedidos.exception.RegraNegocioException;
 import sistemapedidos.utils.HttpMessageErrorTranslator;
@@ -28,6 +29,12 @@ public class ApiExceptionHandler {
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiErrorResponse(ex.getMessage()));
 	}
 
+	@ExceptionHandler(ResponseStatusException.class)
+	public ResponseEntity<ApiErrorResponse> handleResponseStatusException(ResponseStatusException ex) {
+		String mensagem = ex.getReason() != null ? ex.getReason() : "Erro na requisição.";
+		return ResponseEntity.status(ex.getStatusCode()).body(new ApiErrorResponse(mensagem));
+	}
+
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<ApiValidationErrorResponse> handleValidacao(MethodArgumentNotValidException ex) {
 		List<ApiValidationErrorResponse.CampoInvalido> campos = ex.getBindingResult()
@@ -36,7 +43,7 @@ public class ApiExceptionHandler {
 				.map(this::toCampoInvalido)
 				.toList();
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-				.body(new ApiValidationErrorResponse("Requisicao invalida.", campos));
+				.body(new ApiValidationErrorResponse("Requisição inválida.", campos));
 	}
 
 	@ExceptionHandler(HttpMessageNotReadableException.class)
@@ -48,7 +55,7 @@ public class ApiExceptionHandler {
 		}
 
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-				.body(new ApiErrorResponse("Corpo da requisicao invalido."));
+				.body(new ApiErrorResponse("Corpo da requisição inválido."));
 	}
 
 	private ApiValidationErrorResponse.CampoInvalido toCampoInvalido(FieldError fieldError) {

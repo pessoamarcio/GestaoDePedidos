@@ -33,7 +33,7 @@ class ApiExceptionHandlerValidacaoTest {
         ResponseEntity<ApiExceptionHandler.ApiValidationErrorResponse> response = handler.handleValidacao(exception);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertEquals("Requisicao invalida.", response.getBody().mensagem());
+        assertEquals("Requisição inválida.", response.getBody().mensagem());
         assertEquals(1, response.getBody().campos().size());
         assertEquals("nome", response.getBody().campos().getFirst().campo());
         assertEquals("nome obrigatorio", response.getBody().campos().getFirst().mensagem());
@@ -54,7 +54,7 @@ class ApiExceptionHandlerValidacaoTest {
 
         assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, response.getStatusCode());
         assertEquals(
-                "Atualização de status inválida. Status válidos : PAGO, CANCELADO, AGUARDANDO_PAGAMENTO.",
+                "Atualização de status inválida. Status válidos: PAGO, CANCELADO, AGUARDANDO_PAGAMENTO.",
                 response.getBody().mensagem()
         );
     }
@@ -76,7 +76,7 @@ class ApiExceptionHandlerValidacaoTest {
 
         assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, response.getStatusCode());
         assertEquals(
-                "Atualização de status inválida. Status válidos : PAGO, CANCELADO, AGUARDANDO_PAGAMENTO.",
+                "Atualização de status inválida. Status válidos: PAGO, CANCELADO, AGUARDANDO_PAGAMENTO.",
                 response.getBody().mensagem()
         );
     }
@@ -94,7 +94,7 @@ class ApiExceptionHandlerValidacaoTest {
 
         assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, response.getStatusCode());
         assertEquals(
-                "Atualização de status inválida. Status válidos : PAGO, CANCELADO, AGUARDANDO_PAGAMENTO.",
+                "Atualização de status inválida. Status válidos: PAGO, CANCELADO, AGUARDANDO_PAGAMENTO.",
                 response.getBody().mensagem()
         );
     }
